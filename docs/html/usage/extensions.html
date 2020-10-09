@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2. Extensions &#8212; onusim  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/extra.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. Scripts" href="../bin/index.html" />
+    <link rel="prev" title="1. Introduction" href="introduction.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../bin/index.html" title="3. Scripts"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="1. Introduction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">onusim  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>Extensions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="extensions">
+<h1><span class="section-number">2. </span>Extensions<a class="headerlink" href="#extensions" title="Permalink to this headline">¶</a></h1>
+<p>We&rsquo;ll consider these two use cases:</p>
+<ul class="simple">
+<li><p>Supporting a new MIB (for use with already-implemented actions)</p></li>
+<li><p>Supporting new actions (for use with already-implemented MIBs)</p></li>
+</ul>
+<p>It&rsquo;s currently necessary to modify the main software tree in order to add new MIBs and actions. It would be relatively easy (if needed) to allow such things to be stored in external plugin directories.</p>
+<p>Please try to follow existing coding and documentation conventions.</p>
+<div class="section" id="supporting-a-new-mib">
+<h2><span class="section-number">2.1. </span>Supporting a new MIB<a class="headerlink" href="#supporting-a-new-mib" title="Permalink to this headline">¶</a></h2>
+<p>Suppose we want to implement the G.988 9.1.4 Cardholder MIB. This involves the following steps (details such as names are of course up to the implementer):</p>
+<ul class="simple">
+<li><p>Create a new <code class="docutils literal notranslate"><span class="pre">obbaa_onusim/mibs/cardholder.py</span></code> module that defines a <code class="docutils literal notranslate"><span class="pre">cardholder_mib</span></code><a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mib.MIB" title="obbaa_onusim.mib.MIB">MIB</a> object. Think of this object as a Cardholder MIB schema that contains information allowing Cardholder MIB instances to be created</p></li>
+<li><p>Edit the <a class="reference internal" href="../obbaa_onusim/index.html#module-obbaa_onusim.database" title="obbaa_onusim.database"><code class="docutils literal notranslate"><span class="pre">obbaa_onusim/database.py</span></code></a> module to import the new module; this will force it to be executed and will therefore create the new Cardholder MIB schema object</p></li>
+<li><p>Optionally update the same module&rsquo;s <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.database.specs" title="obbaa_onusim.database.specs"><code class="docutils literal notranslate"><span class="pre">specs</span></code></a> variable to cause one or more Cardholder instances to be created</p></li>
+</ul>
+<div class="section" id="obbaa_onusimmibscardholderpy">
+<h3>obbaa_onusim/mibs/cardholder.py<a class="headerlink" href="#obbaa_onusimmibscardholderpy" title="Permalink to this headline">¶</a></h3>
+<p>It&rsquo;s probably easiest to edit one of the existing MIB definitions. The file will begin something like this (what exactly is imported depends on what&rsquo;s needed):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Cardholder MIB (G.988 9.1.5).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">..actions.get</span> <span class="kn">import</span> <span class="n">get_action</span>
+<span class="kn">from</span> <span class="nn">..actions.set</span> <span class="kn">import</span> <span class="n">set_action</span>
+<span class="kn">from</span> <span class="nn">..mib</span> <span class="kn">import</span> <span class="n">MIB</span><span class="p">,</span> <span class="n">Alarm</span><span class="p">,</span> <span class="n">Attr</span><span class="p">,</span> <span class="n">Change</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">O</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">RW</span><span class="p">,</span> \
+    <span class="n">test_result_notification</span>
+<span class="kn">from</span> <span class="nn">..types</span> <span class="kn">import</span> <span class="n">Bits</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">String</span>
+</pre></div>
+</div>
+<p>This is followed by the first part of the <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mib.MIB" title="obbaa_onusim.mib.MIB">MIB</a> definition. The number 5 comes from G.988 Table 11.2.4-1 (Managed entity identifiers) and the rest comes from G.988 9.1.5. The idea is to represent this data as exactly as possible.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cardholder_mib</span> <span class="o">=</span> <span class="n">MIB</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;Cardholder&#39;</span><span class="p">,</span> <span class="s1">&#39;Represents the fixed equipment slot&#39;</span>
+                                      <span class="s1">&#39;configuration of the ONU&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">(</span>
+</pre></div>
+</div>
+<p>This is followed by the <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mib.Attr" title="obbaa_onusim.mib.Attr">attribute (Attr)</a> definitions. Attribute 0 is always <code class="docutils literal notranslate"><span class="pre">me_inst</span></code>. As for the MIB, the first three arguments are its number, name and description, followed by access (<code class="docutils literal notranslate"><span class="pre">R</span></code>, a.k.a <code class="docutils literal notranslate"><span class="pre">Read</span></code>, is a predefined <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mib.Access" title="obbaa_onusim.mib.Access">Access</a> instance), requirement (<code class="docutils literal notranslate"><span class="pre">M</span></code>, a.k.a <code class="docutils literal notranslate"><span class="pre">Mandatory</span></code>, is a predefined <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mib.Requirement" title="obbaa_onusim.mib.Requirement">Requirement</a> instance) and data specification.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Attr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;me_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;Managed entity instance&#39;</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">Number</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span>
+</pre></div>
+</div>
+<p>The data specification is usually a single <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.types.Datum" title="obbaa_onusim.types.Datum">Datum</a> instance but it can also be a tuple of Datum instances (tuples are currently only needed for the <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mibs.onu_g.onu_g_mib" title="obbaa_onusim.mibs.onu_g.onu_g_mib">ONU-G</a><code class="docutils literal notranslate"><span class="pre">serial_number</span></code> attribute but will also be needed for table attributes). <code class="docutils literal notranslate"><span class="pre">Number(2)</span></code> states that it&rsquo;s a 2-byte number.</p>
+<p>The next two attributes might be defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Attr</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;actual_plug_in_unit_type&#39;</span><span class="p">,</span> <span class="s1">&#39;Actual plug-in unit type&#39;</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span>
+         <span class="n">Number</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="n">Attr</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;expected_plug_in_unit_type&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected plug-in unit type&#39;</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span>
+         <span class="n">Number</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+</pre></div>
+</div>
+<p>These could also have been defined as <code class="docutils literal notranslate"><span class="pre">Enum</span></code>s (using the names and values defined in G.988 Table 9.1.5-1) but this doesn&rsquo;t seem worth it in this case.</p>
+<p>The final attribute might be defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Attr</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="s1">&#39;arc_interval&#39;</span><span class="p">,</span> <span class="s1">&#39;ARC interval&#39;</span><span class="p">,</span> <span class="n">RW</span><span class="p">,</span> <span class="n">O</span><span class="p">,</span> <span class="n">Number</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>&hellip;and is then followed by the actions, notifications, changes and alarms.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">),</span> <span class="n">actions</span><span class="o">=</span><span class="p">(</span>
+    <span class="n">get_action</span><span class="p">,</span> <span class="n">set_action</span><span class="p">,</span>
+<span class="p">),</span> <span class="n">notifications</span><span class="o">=</span><span class="p">(</span>
+<span class="p">),</span> <span class="n">changes</span><span class="o">=</span><span class="p">(</span>
+    <span class="n">Change</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;actual_plug_in_unit_type&#39;</span><span class="p">),</span>
+    <span class="n">Change</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;actual_equipment_id&#39;</span><span class="p">),</span>
+    <span class="n">Change</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;arc&#39;</span><span class="p">)</span>
+<span class="p">),</span> <span class="n">alarms</span><span class="o">=</span><span class="p">(</span>
+    <span class="n">Alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;plug_in_circuit_pack_missing&#39;</span><span class="p">,</span> <span class="s1">&#39;...&#39;</span><span class="p">),</span>
+    <span class="o">...</span>
+<span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="obbaa_onusimdatabasepy-import">
+<h3>obbaa_onusim/database.py (import)<a class="headerlink" href="#obbaa_onusimdatabasepy-import" title="Permalink to this headline">¶</a></h3>
+<p>You can base the new import on one of the existing imports.</p>
+<p>Before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">..mibs.onu_g</span> <span class="kn">import</span> <span class="n">onu_g_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.onu2_g</span> <span class="kn">import</span> <span class="n">onu2_g_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.onu_data</span> <span class="kn">import</span> <span class="n">onu_data_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.software_image</span> <span class="kn">import</span> <span class="n">software_image_mib</span>
+</pre></div>
+</div>
+<p>After:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">..mibs.onu_g</span> <span class="kn">import</span> <span class="n">onu_g_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.onu2_g</span> <span class="kn">import</span> <span class="n">onu2_g_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.onu_data</span> <span class="kn">import</span> <span class="n">onu_data_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.software_image</span> <span class="kn">import</span> <span class="n">software_image_mib</span>
+<span class="kn">from</span> <span class="nn">..mibs.cardholder</span> <span class="kn">import</span> <span class="n">cardholder_mib</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="obbaa_onusimdatabasepy-specs">
+<h3>obbaa_onusim/database.py (specs)<a class="headerlink" href="#obbaa_onusimdatabasepy-specs" title="Permalink to this headline">¶</a></h3>
+<p>You can base the new specs on the existing specs.</p>
+<p>Before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">specs</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">onu_g_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;vendor_id&#39;</span><span class="p">:</span> <span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;serial_number&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;abcdefgh&#39;</span><span class="p">,</span> <span class="mi">5678</span><span class="p">)},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">onu2_g_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;omcc_version&#39;</span><span class="p">:</span> <span class="n">omcc_version</span><span class="p">,</span>
+         <span class="s1">&#39;sys_up_time&#39;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">startup_time</span><span class="p">))},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">onu_data_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;mib_data_sync&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">software_image_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0000</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0001</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0100</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0101</span><span class="p">}</span>
+    <span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>After (this is just an example):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">specs</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">onu_g_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;vendor_id&#39;</span><span class="p">:</span> <span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;serial_number&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;abcdefgh&#39;</span><span class="p">,</span> <span class="mi">5678</span><span class="p">)},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">onu2_g_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;omcc_version&#39;</span><span class="p">:</span> <span class="n">omcc_version</span><span class="p">,</span>
+         <span class="s1">&#39;sys_up_time&#39;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">startup_time</span><span class="p">))},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">onu_data_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;mib_data_sync&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">software_image_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0000</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0001</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0100</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0101</span><span class="p">}</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="n">cardholder_mib</span><span class="p">,</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0000</span><span class="p">,</span> <span class="s1">&#39;actual_plug_in_unit_type&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;me_inst&#39;</span><span class="p">:</span> <span class="mh">0x0000</span><span class="p">,</span> <span class="s1">&#39;actual_plug_in_unit_type&#39;</span><span class="p">:</span> <span class="mi">43</span><span class="p">}</span>
+    <span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="supporting-a-new-action">
+<h2><span class="section-number">2.2. </span>Supporting a new action<a class="headerlink" href="#supporting-a-new-action" title="Permalink to this headline">¶</a></h2>
+<p>Suppose we want to implement some of the software download actions. These are already referenced from the <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.mibs.software_image.software_image_mib" title="obbaa_onusim.mibs.software_image.software_image_mib">Software image</a> MIB but they&rsquo;re just dummies. This involves the following steps (details such as names are of course up to the implementer):</p>
+<ul class="simple">
+<li><p>Create a new <code class="docutils literal notranslate"><span class="pre">obbaa_onusim/actions/software.py</span></code> module that defines <code class="docutils literal notranslate"><span class="pre">start_download_action</span></code>, <code class="docutils literal notranslate"><span class="pre">download_section_action</span></code> etc..</p></li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">obbaa_onusim/actions/other.py</span></code> module to remove the dummy implementations of these actions</p></li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">obbaa_onusim/mibs/software_image.py</span></code> module to import the new implementations of these actions</p></li>
+</ul>
+<div class="section" id="obbaa_onusimactionssoftwarepy">
+<h3>obbaa_onusim/actions/software.py<a class="headerlink" href="#obbaa_onusimactionssoftwarepy" title="Permalink to this headline">¶</a></h3>
+<p>It&rsquo;s probably worth first taking a look at an existing action implementation, e.g. <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.actions.set.set_action" title="obbaa_onusim.actions.set.set_action">set_action</a>. This defines:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.actions.set.Set" title="obbaa_onusim.actions.set.Set">Set</a> message</p></li>
+<li><p><a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.actions.set.SetResponse" title="obbaa_onusim.actions.set.SetResponse">SetResponse</a> message</p></li>
+<li><p><a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.actions.set.set_action" title="obbaa_onusim.actions.set.set_action">set_action</a>, which references the Set and SetResponse messages</p></li>
+</ul>
+<p>The new file might begin something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;The software download actions&#39; messages are defined in G.988 A.2.23-32 (extended) and A.3.23-43 (baseline).</span>
+
+<span class="sd">The relevant classes and instances are:</span>
+
+<span class="sd">Start software download:</span>
+<span class="sd">* `StartSoftwareDownload`: Start software download message class</span>
+<span class="sd">* `StartSoftwareDownloadResponse`: Start software download response message</span>
+<span class="sd">   class</span>
+<span class="sd">* `start_software_download_action`: Start software download action instance</span>
+
+<span class="sd">...</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">util</span>
+
+<span class="kn">from</span> <span class="nn">..action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">..message</span> <span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span> <span class="nn">..mib</span> <span class="kn">import</span> <span class="n">RW</span>
+<span class="kn">from</span> <span class="nn">..types</span> <span class="kn">import</span> <span class="n">Number</span><span class="p">,</span> <span class="n">FieldDict</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;obbaa_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The classes will have the same general layout as the existing classes. Outlines are not yet shown. Refer to the <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.message.Message" title="obbaa_onusim.message.Message">Message</a> and <a class="reference internal" href="../obbaa_onusim/index.html#obbaa_onusim.action.Action" title="obbaa_onusim.action.Action">Action</a> classes for more information.</p>
+<p>Also, a new <a class="reference internal" href="../obbaa_onusim/index.html#module-obbaa_onusim.database" title="obbaa_onusim.database">database</a> operation may have to be added.</p>
+</div>
+<div class="section" id="obbaa_onusimactionsotherpy">
+<h3>obbaa_onusim/actions/other.py<a class="headerlink" href="#obbaa_onusimactionsotherpy" title="Permalink to this headline">¶</a></h3>
+<p>Simply delete the definitions of the newly-implemented actions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">start_download_action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="s1">&#39;start-download&#39;</span><span class="p">)</span>
+<span class="n">download_section_action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;download-section&#39;</span><span class="p">)</span>
+<span class="n">end_download_action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span> <span class="s1">&#39;end-download&#39;</span><span class="p">)</span>
+<span class="n">activate_image_action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span><span class="mi">22</span><span class="p">,</span> <span class="s1">&#39;activate-image&#39;</span><span class="p">)</span>
+<span class="n">commit_image_action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="s1">&#39;commit-image&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="obbaa_onusimmibssoftware_imagepy">
+<h3>obbaa_onusim/mibs/software_image.py<a class="headerlink" href="#obbaa_onusimmibssoftware_imagepy" title="Permalink to this headline">¶</a></h3>
+<p>This is straightforward. For example:</p>
+<p>Before:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">..actions.other</span> <span class="kn">import</span> <span class="n">start_download_action</span><span class="p">,</span> <span class="n">download_section_action</span><span class="p">,</span> \
+    <span class="n">end_download_action</span><span class="p">,</span> <span class="n">activate_image_action</span><span class="p">,</span> <span class="n">commit_image_action</span>
+</pre></div>
+</div>
+<p>After:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">..actions.software</span> <span class="kn">import</span> <span class="n">start_download_action</span><span class="p">,</span> \
+    <span class="n">download_section_action</span><span class="p">,</span> <span class="n">end_download_action</span><span class="p">,</span> <span class="n">activate_image_action</span><span class="p">,</span> \
+    <span class="n">commit_image_action</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. Extensions</a><ul>
+<li><a class="reference internal" href="#supporting-a-new-mib">2.1. Supporting a new MIB</a><ul>
+<li><a class="reference internal" href="#obbaa_onusimmibscardholderpy">obbaa_onusim/mibs/cardholder.py</a></li>
+<li><a class="reference internal" href="#obbaa_onusimdatabasepy-import">obbaa_onusim/database.py (import)</a></li>
+<li><a class="reference internal" href="#obbaa_onusimdatabasepy-specs">obbaa_onusim/database.py (specs)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#supporting-a-new-action">2.2. Supporting a new action</a><ul>
+<li><a class="reference internal" href="#obbaa_onusimactionssoftwarepy">obbaa_onusim/actions/software.py</a></li>
+<li><a class="reference internal" href="#obbaa_onusimactionsotherpy">obbaa_onusim/actions/other.py</a></li>
+<li><a class="reference internal" href="#obbaa_onusimmibssoftware_imagepy">obbaa_onusim/mibs/software_image.py</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter"><span class="section-number">1. </span>Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../bin/index.html"
+                        title="next chapter"><span class="section-number">3. </span>Scripts</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/usage/extensions.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../bin/index.html" title="3. Scripts"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="1. Introduction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">onusim  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>Extensions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Broadband Forum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.0+.
+    </div>
+  </body>
+</html>

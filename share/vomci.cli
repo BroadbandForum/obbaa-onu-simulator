@@ -1,0 +1,5 @@
+/po/au priv_key=/app/share/vomci_privatekey.pem local_cert=/app/share/vomci.cer peer_cert=/app/share/polt.cer
+/po/set client_server=client enable=yes
+/po/end client_server=client name=polt1 port=8433 host=polt
+/po/filter client_server=client name=filt1 priority=100 ep_name=polt1 Type=any
+/po/onu channel_term=channeltermination.1 onu_id=1 serial_vendor_id=BRCM serial_vendor_specific=00000001

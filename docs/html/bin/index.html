@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3. Scripts &#8212; onusim  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/extra.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Modules" href="../obbaa_onusim/index.html" />
+    <link rel="prev" title="2. Extensions" href="../usage/extensions.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../obbaa_onusim/index.html" title="4. Modules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../usage/extensions.html" title="2. Extensions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">onusim  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3. </span>Scripts</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="scripts">
+<h1><span class="section-number">3. </span>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-bin.onusim">
+<span id="onu-simulation-server"></span><h2><span class="section-number">3.1. </span>ONU simulation server<a class="headerlink" href="#module-bin.onusim" title="Permalink to this headline">¶</a></h2>
+<p>TR-451 ONU simulator.</p>
+<p>Simulates one or more ONU instances on a single channel termination.</p>
+<p class="rubric">Examples</p>
+<p>ONU channel termination name <code class="docutils literal notranslate"><span class="pre">x</span></code> with ONU ids 0 through 99 and with
+support for extended messages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onusim</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">ctermname</span> <span class="n">x</span> <span class="o">--</span><span class="n">onuidfirst</span> <span class="mi">0</span> <span class="o">--</span><span class="n">onuidlast</span> <span class="mi">99</span> <span class="o">--</span><span class="n">extended</span>
+</pre></div>
+</div>
+<p>All defaults with logging level 2 (debug):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onusim</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">l</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Messages addressed to an invalid channel termination name or ONU id are ignored
+(no response will be generated). This might be a mistake.</p>
+<p><strong>Usage</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">onusim</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="n">ADDRESS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CTERMNAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">ONUIDFIRST</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">I</span> <span class="n">ONUIDLAST</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">DUMPFILE</span><span class="p">]]</span> <span class="p">[</span><span class="o">-</span><span class="n">l</span> <span class="n">LOGLEVEL</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="module-bin.onusim.argparser Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#module-bin.onusim.argparser Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-a, --address</kbd></dt>
+<dd><p>server DNS name or IP address; default: ‘0.0.0.0’</p>
+</dd>
+<dt><kbd>-p, --port</kbd></dt>
+<dd><p>server UDP port number; default: 12345</p>
+</dd>
+<dt><kbd>-n, --ctermname</kbd></dt>
+<dd><p>channel termination name; default: ‘cterm’</p>
+</dd>
+<dt><kbd>-i, --onuidfirst</kbd></dt>
+<dd><p>first ONU id; default: 42</p>
+</dd>
+<dt><kbd>-I, --onuidlast</kbd></dt>
+<dd><p>last ONU id; default: same as first</p>
+</dd>
+<dt><kbd>-e, --extended</kbd></dt>
+<dd><p>whether to use/support extended messages</p>
+</dd>
+<dt><kbd>-d, --dumpfile</kbd></dt>
+<dd><p>file to which to dump hex messages; default (if value omitted): ‘dump.txt’</p>
+</dd>
+<dt><kbd>-l, --loglevel</kbd></dt>
+<dd><p>logging level (0=errors+warnings, 1=info, 2=debug); default: 0</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="module-bin.onucli">
+<span id="onu-test-client"></span><h2><span class="section-number">3.2. </span>ONU test client<a class="headerlink" href="#module-bin.onucli" title="Permalink to this headline">¶</a></h2>
+<p>TR-451 ONU command-line client.</p>
+<p>Sends OMCI commands to an ONU simulator instance on a single channel
+termination.</p>
+<p class="rubric">Examples</p>
+<p>These examples assume that an ONU simulator instance is listening on the
+default address and port. If not, commands will time out after 10 seconds.</p>
+<p>Get (using all defaults):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span> <span class="o">./</span><span class="n">onucli</span><span class="o">.</span><span class="n">py</span> <span class="n">get</span>
+<span class="o">&lt;</span><span class="n">TBD</span><span class="p">;</span> <span class="n">ADD</span> <span class="n">LATER</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Get (using extended messages):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span> <span class="o">./</span><span class="n">onucli</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">extended</span> <span class="n">get</span>
+<span class="o">&lt;</span><span class="n">TBD</span><span class="p">;</span> <span class="n">ADD</span> <span class="n">LATER</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The returned attribute mask is <code class="docutils literal notranslate"><span class="pre">0xf600</span></code>, indicating that the
+response includes ONU-G attributes 1-4, 6 and 7 (these are the mandatory
+ones). The optional-attribute mask is <code class="docutils literal notranslate"><span class="pre">0x0807</span></code>, indicating that
+attributes 5 and 14-16 are unsupported (these are the deprecated and
+undefined ones). The remaining (optional) attributes are implemented but
+not present in ONU-G instance 0.</p>
+<p>Get (help text):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span> <span class="o">./</span><span class="n">onucli</span><span class="o">.</span><span class="n">py</span> <span class="n">get</span> <span class="o">--</span><span class="n">help</span>
+<span class="n">usage</span><span class="p">:</span> <span class="n">onucli</span> <span class="n">get</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="n">me_class</span><span class="p">]</span> <span class="p">[</span><span class="n">me_inst</span><span class="p">]</span> <span class="p">[</span><span class="n">attr_mask</span><span class="p">]</span>
+
+<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
+    <span class="n">me_class</span>    <span class="n">ME</span> <span class="n">class</span><span class="p">;</span> <span class="n">default</span><span class="p">:</span> <span class="mi">256</span>
+    <span class="n">me_inst</span>     <span class="n">ME</span> <span class="n">instance</span><span class="p">;</span> <span class="n">default</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="n">attr_mask</span>   <span class="n">ME</span> <span class="n">instance</span><span class="p">;</span> <span class="n">default</span><span class="p">:</span> <span class="mi">65535</span>
+
+<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
+    <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>  <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+</pre></div>
+</div>
+<p><strong>Usage</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">onucli</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="n">ADDRESS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">CTERMNAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">ONUIDFIRST</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">I</span> <span class="n">ONUIDLAST</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">DUMPFILE</span><span class="p">]]</span> <span class="p">[</span><span class="o">-</span><span class="n">l</span> <span class="n">LOGLEVEL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">TCI</span><span class="p">]</span>
+              <span class="p">{</span><span class="nb">set</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">get</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">upload</span><span class="p">,</span><span class="n">u</span><span class="p">,</span><span class="n">upload</span><span class="o">-</span><span class="nb">next</span><span class="p">,</span><span class="n">un</span><span class="p">}</span> <span class="o">...</span>
+</pre></div>
+</div>
+<div class="section" id="module-bin.onucli.argparser Positional Arguments">
+<h3>Positional Arguments<a class="headerlink" href="#module-bin.onucli.argparser Positional Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>cmd</kbd></dt>
+<dd><p>Possible choices: set, s, get, g, reset, r, upload, u, upload-next, un</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-bin.onucli.argparser Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#module-bin.onucli.argparser Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-a, --address</kbd></dt>
+<dd><p>server DNS name or IP address; default: ‘127.0.0.1’</p>
+</dd>
+<dt><kbd>-p, --port</kbd></dt>
+<dd><p>server UDP port number; default: 12345</p>
+</dd>
+<dt><kbd>-n, --ctermname</kbd></dt>
+<dd><p>channel termination name; default: ‘cterm’</p>
+</dd>
+<dt><kbd>-i, --onuidfirst</kbd></dt>
+<dd><p>first ONU id; default: 42</p>
+</dd>
+<dt><kbd>-I, --onuidlast</kbd></dt>
+<dd><p>last ONU id; default: same as first</p>
+</dd>
+<dt><kbd>-e, --extended</kbd></dt>
+<dd><p>whether to use/support extended messages</p>
+</dd>
+<dt><kbd>-d, --dumpfile</kbd></dt>
+<dd><p>file to which to dump hex messages; default (if value omitted): ‘dump.txt’</p>
+</dd>
+<dt><kbd>-l, --loglevel</kbd></dt>
+<dd><p>logging level (0=errors+warnings, 1=info, 2=debug); default: 1</p>
+</dd>
+<dt><kbd>-t, --tci</kbd></dt>
+<dd><p>first TCI (Transaction Correlation Identifier); default: 0</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-bin.onucli.argparser Sub-commands:">
+<h3>Sub-commands:<a class="headerlink" href="#module-bin.onucli.argparser Sub-commands:" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="module-bin.onucli.argparser set (s)">
+<h4>set (s)<a class="headerlink" href="#module-bin.onucli.argparser set (s)" title="Permalink to this headline">¶</a></h4>
+<p>Set MIB instance attribute values.</p>
+<p>Supply the values as one or more name=value pairs, where name is the
+attribute name or number.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onucli</span> <span class="nb">set</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="n">me_class</span><span class="p">]</span> <span class="p">[</span><span class="n">me_inst</span><span class="p">]</span> <span class="n">attrs</span> <span class="p">[</span><span class="n">attrs</span> <span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="module-bin.onucli.argparser Positional Arguments_repeat1">
+<h5>Positional Arguments<a class="headerlink" href="#module-bin.onucli.argparser Positional Arguments_repeat1" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>me_class</kbd></dt>
+<dd><p>ME class; default: 256</p>
+</dd>
+<dt><kbd>me_inst</kbd></dt>
+<dd><p>ME instance; default: 0</p>
+</dd>
+<dt><kbd>attrs</kbd></dt>
+<dd><p>attributes to set; each is of the form name=value</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="module-bin.onucli.argparser get (g)">
+<h4>get (g)<a class="headerlink" href="#module-bin.onucli.argparser get (g)" title="Permalink to this headline">¶</a></h4>
+<p>Get MIB instance attribute values.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onucli</span> <span class="n">get</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="n">me_class</span><span class="p">]</span> <span class="p">[</span><span class="n">me_inst</span><span class="p">]</span> <span class="p">[</span><span class="n">attr_mask</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="module-bin.onucli.argparser Positional Arguments_repeat2">
+<h5>Positional Arguments<a class="headerlink" href="#module-bin.onucli.argparser Positional Arguments_repeat2" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>me_class</kbd></dt>
+<dd><p>ME class; default: 256</p>
+</dd>
+<dt><kbd>me_inst</kbd></dt>
+<dd><p>ME instance; default: 0</p>
+</dd>
+<dt><kbd>attr_mask</kbd></dt>
+<dd><p>Attribute mask (0b, 0o and 0x prefixes are OK); default: 65535</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="module-bin.onucli.argparser reset (r)">
+<h4>reset (r)<a class="headerlink" href="#module-bin.onucli.argparser reset (r)" title="Permalink to this headline">¶</a></h4>
+<p>Reset MIB instance values.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onucli</span> <span class="n">reset</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-bin.onucli.argparser upload (u)">
+<h4>upload (u)<a class="headerlink" href="#module-bin.onucli.argparser upload (u)" title="Permalink to this headline">¶</a></h4>
+<p>Prepare for upload of MIB instance values.</p>
+<p>The MIB instance values are latched and will remain valid for 60
+seconds. The returned num_upload_nexts value is the number of
+upload-next invocations needed to return them</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onucli</span> <span class="n">upload</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-bin.onucli.argparser upload-next (un)">
+<h4>upload-next (un)<a class="headerlink" href="#module-bin.onucli.argparser upload-next (un)" title="Permalink to this headline">¶</a></h4>
+<p>Upload the next set of MIB instance values.</p>
+<p>The supplied sequence number must be in the range 0 to num_upload_nexts
+- 1.</p>
+<p>If upload hasn’t been called, or was called more than 60 seconds ago,
+no data will be returned.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">onucli</span> <span class="n">upload</span><span class="o">-</span><span class="nb">next</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="n">seq_num</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="module-bin.onucli.argparser Positional Arguments_repeat3">
+<h5>Positional Arguments<a class="headerlink" href="#module-bin.onucli.argparser Positional Arguments_repeat3" title="Permalink to this headline">¶</a></h5>
+<dl class="option-list">
+<dt><kbd>seq_num</kbd></dt>
+<dd><p>Sequence number; default: 0</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Scripts</a><ul>
+<li><a class="reference internal" href="#module-bin.onusim">3.1. ONU simulation server</a><ul>
+<li><a class="reference internal" href="#module-bin.onusim.argparser Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bin.onucli">3.2. ONU test client</a><ul>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Positional Arguments">Positional Arguments</a></li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Named Arguments">Named Arguments</a></li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Sub-commands:">Sub-commands:</a><ul>
+<li><a class="reference internal" href="#module-bin.onucli.argparser set (s)">set (s)</a><ul>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Positional Arguments_repeat1">Positional Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser get (g)">get (g)</a><ul>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Positional Arguments_repeat2">Positional Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser reset (r)">reset (r)</a></li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser upload (u)">upload (u)</a></li>
+<li><a class="reference internal" href="#module-bin.onucli.argparser upload-next (un)">upload-next (un)</a><ul>
+<li><a class="reference internal" href="#module-bin.onucli.argparser Positional Arguments_repeat3">Positional Arguments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../usage/extensions.html"
+                        title="previous chapter"><span class="section-number">2. </span>Extensions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../obbaa_onusim/index.html"
+                        title="next chapter"><span class="section-number">4. </span>Modules</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/bin/index.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../obbaa_onusim/index.html" title="4. Modules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../usage/extensions.html" title="2. Extensions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">onusim  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3. </span>Scripts</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Broadband Forum.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.0+.
+    </div>
+  </body>
+</html>
