@@ -1,3 +1,3 @@
 # ONU simulator and test client
 
-See the full [documentation](docs/html/index.html).
+See the full [documentation](docs/index.html).
