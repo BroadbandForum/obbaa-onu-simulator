@@ -31,6 +31,17 @@ from .mibs.onu_g import onu_g_mib
 from .mibs.onu2_g import onu2_g_mib
 from .mibs.onu_data import onu_data_mib
 from .mibs.software_image import software_image_mib
+from .mibs.gal_eth_prof import gal_eth_prof_mib
+from .mibs.mac_bridge_svc_prof import mac_bridge_svc_prof_mib
+from .mibs.mac_bridge_port_config import mac_bridge_port_conf_mib
+from .mibs.pptp_eth_uni import pptp_eth_uni_mib
+from .mibs.tcont import tcont_mib
+from .mibs.gem_iw_tp import gem_iw_tp_mib
+from .mibs.gem_port_net_ctp import gem_port_net_ctp_mib
+from .mibs.ieee_8021p_mapper_svc_prof import ieee_8021p_mapper_svc_prof_mib
+from .mibs.vlan_tag_filter_data import vlan_tag_filter_data_mib
+from .mibs.ext_vlan_tag_op_conf_data import extended_vlan_tag_op_conf_data_mib
+from .mibs.priority_queue import priority_queue_mib
 from .types import AttrDataValues
 
 logger = logging.getLogger(__name__.replace('obbaa_', ''))
@@ -73,6 +84,99 @@ specs = (
         {'me_inst': 0x0001},
         {'me_inst': 0x0100},
         {'me_inst': 0x0101}
+    )),
+    (tcont_mib, (
+        {'me_inst': 0x8000}, {'me_inst': 0x8001},
+        {'me_inst': 0x8002}, {'me_inst': 0x8003},
+        {'me_inst': 0x8004}, {'me_inst': 0x8005},
+        {'me_inst': 0x8006}, {'me_inst': 0x8007},
+    )),
+    (pptp_eth_uni_mib, (
+        {'me_inst': 1, 'config_ind': 0x03, 'max_frame_size': 1518},
+    )),
+    (priority_queue_mib, (
+    	#8 downstream priority queues for the eth uni
+        {'me_inst': 0x0000, 'related_port': 0x00010000}, 
+        {'me_inst': 0x0001, 'related_port': 0x00010001},
+        {'me_inst': 0x0002, 'related_port': 0x00010002}, 
+        {'me_inst': 0x0003, 'related_port': 0x00010003},
+        {'me_inst': 0x0004, 'related_port': 0x00010004}, 
+        {'me_inst': 0x0005, 'related_port': 0x00010005},
+        {'me_inst': 0x0006, 'related_port': 0x00010006}, 
+        {'me_inst': 0x0007, 'related_port': 0x00010007},
+        #8 upstream priority queues per T-CONT
+        #T-CONT 0x8000
+        {'me_inst': 0x8000, 'related_port': 0x80000000}, 
+        {'me_inst': 0x8001, 'related_port': 0x80000001},
+        {'me_inst': 0x8002, 'related_port': 0x80000002}, 
+        {'me_inst': 0x8003, 'related_port': 0x80000003},
+        {'me_inst': 0x8004, 'related_port': 0x80000004}, 
+        {'me_inst': 0x8005, 'related_port': 0x80000005},
+        {'me_inst': 0x8006, 'related_port': 0x80000006}, 
+        {'me_inst': 0x8007, 'related_port': 0x80000007},
+        #T-CONT 0x8001
+        {'me_inst': 0x8008, 'related_port': 0x80010000}, 
+        {'me_inst': 0x8009, 'related_port': 0x80010001},
+        {'me_inst': 0x800a, 'related_port': 0x80010002}, 
+        {'me_inst': 0x800b, 'related_port': 0x80010003},
+        {'me_inst': 0x800c, 'related_port': 0x80010004}, 
+        {'me_inst': 0x800d, 'related_port': 0x80010005},
+        {'me_inst': 0x800e, 'related_port': 0x80010006}, 
+        {'me_inst': 0x800f, 'related_port': 0x80010007},
+        #T-CONT 0x8002
+        {'me_inst': 0x8010, 'related_port': 0x80020000}, 
+        {'me_inst': 0x8011, 'related_port': 0x80020001},
+        {'me_inst': 0x8012, 'related_port': 0x80020002}, 
+        {'me_inst': 0x8013, 'related_port': 0x80020003},
+        {'me_inst': 0x8014, 'related_port': 0x80020004}, 
+        {'me_inst': 0x8015, 'related_port': 0x80020005},
+        {'me_inst': 0x8016, 'related_port': 0x80020006}, 
+        {'me_inst': 0x8017, 'related_port': 0x80020007},
+        #T-CONT 0x8003
+        {'me_inst': 0x8018, 'related_port': 0x80030000}, 
+        {'me_inst': 0x8019, 'related_port': 0x80030001},
+        {'me_inst': 0x801a, 'related_port': 0x80030002}, 
+        {'me_inst': 0x801b, 'related_port': 0x80030003},
+        {'me_inst': 0x801c, 'related_port': 0x80030004}, 
+        {'me_inst': 0x801d, 'related_port': 0x80030005},
+        {'me_inst': 0x801e, 'related_port': 0x80030006}, 
+        {'me_inst': 0x801f, 'related_port': 0x80030007},
+        #T-CONT 0x8004
+        {'me_inst': 0x8020, 'related_port': 0x80040000}, 
+        {'me_inst': 0x8021, 'related_port': 0x80040001},
+        {'me_inst': 0x8022, 'related_port': 0x80040002}, 
+        {'me_inst': 0x8023, 'related_port': 0x80040003},
+        {'me_inst': 0x8024, 'related_port': 0x80040004}, 
+        {'me_inst': 0x8025, 'related_port': 0x80040005},
+        {'me_inst': 0x8026, 'related_port': 0x80040006}, 
+        {'me_inst': 0x8027, 'related_port': 0x80040007},
+        #T-CONT 0x8005
+        {'me_inst': 0x8028, 'related_port': 0x80050000}, 
+        {'me_inst': 0x8029, 'related_port': 0x80050001},
+        {'me_inst': 0x802a, 'related_port': 0x80050002}, 
+        {'me_inst': 0x802b, 'related_port': 0x80050003},
+        {'me_inst': 0x802c, 'related_port': 0x80050004}, 
+        {'me_inst': 0x802d, 'related_port': 0x80050005},
+        {'me_inst': 0x802e, 'related_port': 0x80050006}, 
+        {'me_inst': 0x802f, 'related_port': 0x80050007},
+        #T-CONT 0x8006
+        {'me_inst': 0x8030, 'related_port': 0x80060000}, 
+        {'me_inst': 0x8031, 'related_port': 0x80060001},
+        {'me_inst': 0x8032, 'related_port': 0x80060002}, 
+        {'me_inst': 0x8033, 'related_port': 0x80060003},
+        {'me_inst': 0x8034, 'related_port': 0x80060004}, 
+        {'me_inst': 0x8035, 'related_port': 0x80060005},
+        {'me_inst': 0x8036, 'related_port': 0x80060006}, 
+        {'me_inst': 0x8037, 'related_port': 0x80060007},
+        #T-CONT 0x8007
+        {'me_inst': 0x8038, 'related_port': 0x80070000}, 
+        {'me_inst': 0x8039, 'related_port': 0x80070001},
+        {'me_inst': 0x803a, 'related_port': 0x80070002}, 
+        {'me_inst': 0x803b, 'related_port': 0x80070003},
+        {'me_inst': 0x803c, 'related_port': 0x80070004}, 
+        {'me_inst': 0x803d, 'related_port': 0x80070005},
+        {'me_inst': 0x803e, 'related_port': 0x80070006}, 
+        {'me_inst': 0x803f, 'related_port': 0x80070007},
     ))
 )
 
@@ -189,6 +293,18 @@ class Database:
                           sorted(instances.keys(), key=lambda k: k[0]) if
                           n == me_class])
 
+    def increment_mib_sync(self, onu_id):
+        _, instance, _ = self._instance(onu_id, onu_data_mib.number, 0)
+        assert instance is not None
+        assert 'mib_data_sync' in instance
+        # XXX sadly this is a tuple; the external interface should convert
+        #     scalar data to/from tuples
+        mib_data_sync = instance['mib_data_sync'][0]
+        # values skip 0, i.e. 1 -> 2, ..., 254 -> 255, 255 -> 1, ...
+        mib_data_sync = 1 if mib_data_sync >= 255 else mib_data_sync + 1
+        instance['mib_data_sync'] = (mib_data_sync,)
+        logger.info('updated: MIB %s = %r' % (onu_data_mib, instance))
+
     def set(self, onu_id, me_class, me_inst, attr_mask, values, *,
             extended=False) -> Results:
         """Set the specified attribute values.
@@ -246,18 +362,8 @@ class Database:
                             'MIB %s #%d %s = %r' % (mib, me_inst, attr, value))
 
         # if the MIB instance was updated, increment the MIB data sync counter
-        # XXX we need utility functions for doing this sort of thing
         if updated:
-            _, instance, _ = self._instance(onu_id, onu_data_mib.number, 0)
-            assert instance is not None
-            assert 'mib_data_sync' in instance
-            # XXX sadly this is a tuple; the external interface should convert
-            #     scalar data to/from tuples
-            mib_data_sync = instance['mib_data_sync'][0]
-            # values skip 0, i.e. 1 -> 2, ..., 254 -> 255, 255 -> 1, ...
-            mib_data_sync = 1 if mib_data_sync >= 255 else mib_data_sync + 1
-            instance['mib_data_sync'] = (mib_data_sync,)
-            logger.info('updated: MIB %s = %r' % (onu_data_mib, instance))
+            self.increment_mib_sync(onu_id)
 
         return results
 
@@ -447,6 +553,31 @@ class Database:
                 else:
                     results.body = bodies[seq_num]
         return results
+
+    def delete(self, onu_id, me_class, me_inst, *, extended=False) -> Results:
+        """Delete the specified mib
+        Arguments:
+            onu_id
+            mib_class
+            mib_instance
+            Message -> extended
+        """
+        logger.debug('delete onu_id=%d, mib_class=%d, mib_instance=%d, '
+                                   'message=%r' % (
+                                              onu_id, me_class, me_inst, extended))
+        res=Results()
+        mib, instance, res.reason = self._instance(onu_id, me_class,me_inst)
+
+        if mib and instance:
+            if mib != mibs.get:
+                logger.error('mib %s is not valid for delete, must be %s' % (
+                    mib, mibs.get))
+                ##error result
+                res.reason = 0b0100
+            else:
+                self._reload(onu_id)
+
+        return res
 
     def reset(self, onu_id, me_class, me_inst, *, extended=False) -> Results:
         """Reset the specified MIB instance.

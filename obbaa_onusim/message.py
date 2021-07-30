@@ -40,6 +40,7 @@ Examples::
 
 import functools
 import logging
+import os, signal
 
 from typing import Any, Optional, Tuple, Union
 
@@ -160,10 +161,7 @@ class Message:
         from .mib import mibs
         self._mib = mibs.get(self.me_class, None)
         if self._mib is None:
-            supported = ', '.join(str(m) for _, m in
-                                  sorted(mibs.items(), key=lambda i: i[0]))
-            raise Exception('MIB %d not found; supported MIBs: %s' % (
-                self.me_class, supported))
+            logger.error('UNKNOWN INSTANCE')
 
         if not _no_validate:
             fields = self.validate()
@@ -346,7 +344,10 @@ class Message:
     @classmethod
     def _create(cls, **fields) -> 'Message':
         key = cls._key(fields)
-        assert key in cls._class_for_type
+        if(key not in cls._class_for_type):
+            logger.error('UNKNOWN ENTITY: %s' % (key,))
+            os.kill(os.getpid(),signal.SIGTERM)
+        
         cls_ = cls._class_for_type[key]
         message = cls_(_no_validate=True, **fields)
         return message
