@@ -38,17 +38,7 @@ ieee_8021p_mapper_svc_prof_mib = MIB(130, 'IEEE_802_1P_MAPPER', 'IEEE 802.1p Map
     	         'set_pcp_by_default_pbit_assumption_attr'))),
     Attr(11, 'dscp_to_pbit_mapping', 'DSCP to Pbit Mapping', RW, M, Bytes(24)),
     Attr(12, 'default_pbit_assumption', 'Default Pbit Assumption', RWC, M, Number(1)),
-    Attr(13, 'tp_type', 'TP Type', RWC, O, 
-    	Enum(1,('mapper_used_for_bridging_mapping',
-    	        'mapper_associated_with_pptp_eth_uni',
-    	        'mapper_associated_with_an_ip_host',
-    	        'mapper_associated_with_eth_flow_tp',
-    	        'mapper_associated_with_pptp_xdsl_uni',
-    	        'reserved',
-    	        'mapper_associated_with_pptp_moca_uni',
-    	        'mapper_associated_with_veip',
-    	        'mapper_associated_with_iw_vcc_tp',
-    	        'mapper_associated_with_efm_bonding_group')))
+    Attr(13, 'tp_type', 'TP Type', RWC, O, Number(1))
 ), actions=(
     get_action, set_action, create_action, delete_action
 ))

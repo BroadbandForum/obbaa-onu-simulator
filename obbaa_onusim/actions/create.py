@@ -44,7 +44,6 @@ class Create(Message):
 
     def process(self, server: object) -> 'CreateResponse':
 
-        print('\n\nThis is the create message!!!!!!!!!\n\n')
         # TODO: need to implement the create handler. For now just increment the mib_data_sync
         server.database.increment_mib_sync(self.onu_id)
 

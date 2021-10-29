@@ -33,37 +33,36 @@ class Delete(Message):
     """MIB upload command message.
     """
 
-    def process(self, server: object) -> 'Delete':
+    def process(self, server: object) -> 'DeleteResponse':
 
+        # TODO: need to implement the create handler. For now just increment the mib_data_sync
+        server.database.increment_mib_sync(self.onu_id)
 
-        func_delete = server.database.delete(self.onu_id, self.me_class,
-                                         self.me_inst, extended=self.extended)
-
-        make_delete = Delete_action(cterm_name=self.cterm_name,
+        response = DeleteResponse(cterm_name=self.cterm_name,
                                      onu_id=self.onu_id,
                                      extended=self.extended, tci=self.tci,
                                      me_class=self.me_class,
-                                     me_inst=self.me_inst,
-                                     num_upload_nexts=func_delete.num_upload_nexts)
-        return make_delete
+                                     me_inst=self.me_inst)
+        return response
 
 
 # XXX note that there's no 'reason' field
-class Delete_action(Message):
+class DeleteResponse(Message):
     """mib delete message.
      """
     def encode_contents(self) -> bytearray:
-        contents = Number(1).encode(self.reason)
+        contents = Number(2).encode(0)
         return contents
 
-    def decode_contents(self, contents) -> FieldDict:
+    def decode_contents(self, contents: bytearray) -> FieldDict:
+        """Decode this message's contents, i.e. its type-specific payload.
 
-        reason, _ = Number(1).decode(contents, 0)
-        return {'reason': reason}
+        Returns:
+            Dictionary with the following items.
+        """
+        return {}
 
 
-
-
-delete_action = Action(6, 'delete', 'Delete action', Delete, Delete_action)
+delete_action = Action(6, 'delete', 'Delete action', Delete, DeleteResponse)
 
 ##Passa por aqui

@@ -274,7 +274,7 @@ class Database:
         if not mib:
             logger.error('MIB %d not implemented; MIBs: %s' % (
                 me_class, self._mib_names()))
-            reason = 0b0100
+            reason = 0b0100 
         else:
             instances_for_onu_id = self._instances.get(onu_id, {})
             instance = instances_for_onu_id.get((me_class, me_inst), None)
@@ -364,6 +364,11 @@ class Database:
         # if the MIB instance was updated, increment the MIB data sync counter
         if updated:
             self.increment_mib_sync(onu_id)
+
+        # Ceate funciton is not yet completed. That's why 2 lines were placed so that the function set can run.
+        # When the create function is done delete these lines.
+        if results.reason == 0b0100:
+            results.reason=0b0000         
 
         return results
 

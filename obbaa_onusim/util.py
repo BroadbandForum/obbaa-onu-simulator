@@ -164,6 +164,12 @@ def toint(x: Any):
     if not isinstance(x, (str, bytes, bytearray)):
         return int(x)
     else:
-        match = re.match('^0([box])', x.lower())
+        match = re.match('^0([box])', x.lower().decode('ascii','ignore'))
         base = {'b': 2, 'o': 8, 'x': 16}[match.group(1)] if match else 10
-        return int(x, base)
+
+        if not isinstance(x,int):
+            x=0
+            return int(x)
+        else:
+            return int(x, base)
+
