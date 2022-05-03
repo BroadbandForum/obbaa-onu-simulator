@@ -33,11 +33,13 @@ gem_port_net_ctp_mib = MIB(268, 'GEM_PORT_NET_CTP', 'GEM Port Network CTP ', att
     Attr(7, 'pri_queue_ptr_ds', 'Priority Queue Pointer for downstream', RWC, M, Number(2)),
     Attr(8, 'encryption_state', 'Encryption State', R, O, Number(1)),
     Attr(9, 'traffic_desc_prof_ptr_ds', 'Traffic Descriptor profile pointer for DS', RWC, O, Number(2)),
-    Attr(10, 'encryption_key_ring', 'Encryption Key Ring', RWC, O,
-    	Enum(1,('no_encryption',
-    	        'unicast_encryption_both_dir',
-    	        'broadcast_encryption',
-    	        'unicast_encryption_ds'))),
+     Attr(10, 'encryption_key_ring', 'Encryption Key Ring', RWC, O,
+         Enum(1,('no_encryption',
+               'unicast_encryption_both_dir',
+               'broadcast_encryption',
+               'unicast_encryption_ds'))),
+
+
 ), actions=(
     get_action, set_action, create_action, delete_action
 ),alarms=(

@@ -18,6 +18,8 @@ services:
   # can use this with default options from the host
   cterm:
     image: 'broadbandforum/obbaa-onu-simulator:latest'
+    stdin_open: true
+    tty: true
     ports:
       - '12345:12345/udp'
     command: onusim.py -l 1 -n cterm -i 1 -I 100
@@ -25,6 +27,8 @@ services:
   # can use this with the options in Igor's example
   cterm1:
     image: 'broadbandforum/obbaa-onu-simulator:latest'
+    stdin_open: true
+    tty: true
     ports:
       - '50001:50000/udp'
     command: onusim.py -l 2 -p 50000 -n channeltermination.1 -i 1 -I 100
@@ -32,6 +36,8 @@ services:
   # can use this with the options in Igor's example (but different chan term)
   cterm2:
     image: 'broadbandforum/obbaa-onu-simulator:latest'
+    stdin_open: true
+    tty: true
     ports:
       - '50002:50000/udp'
     command: onusim.py -l 2 -p 50000 -n channeltermination.2 -i 1 -I 100

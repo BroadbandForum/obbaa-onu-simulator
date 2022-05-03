@@ -33,7 +33,7 @@ Example::
 
 import logging
 
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Set, Tuple, Union
 
 from .action import Action
 from .types import AttrData, AttrDataValues, Datum, Name, NumberName, \
@@ -221,7 +221,7 @@ class Attr(NumberName, AutoGetter):
         results = None
         if values:
             values_ = values if isinstance(values, tuple) else (values,)
-            assert len(values_) == len(self._data)
+            #assert len(values_) == len(self._data)
             results_ = tuple(v() if callable(v) else v for v in values_)
             results = results_ if isinstance(values, tuple) else results_[0]
         return results
@@ -240,7 +240,7 @@ class Attr(NumberName, AutoGetter):
         shift = 16 - self._number  # 15, ..., 0
         return 1 << shift
 
-    @property
+    @property 
     def size(self):
         """Get this attribute's value size in bytes."""
         return sum(d.size for d in self._data)
@@ -289,6 +289,20 @@ class Change(NumberName):
 
 
 class Alarm(NumberName):
-    """Attribute alarm class.
-    """
-    pass
+    def __init__(self, number: int, name: str, resource: str,  description: Optional[str] = None, *, names: Optional[Set[str]] = None):
+        super().__init__(number, name,description, names=names)
+        self.state = False
+        self.resource = resource
+
+    def resource(self):
+        return self.resource
+
+    def get_state(self):
+        return self.state
+
+    def set_state(self,state: bool):
+        self.state = state
+
+    def __repr__(self) -> str:
+        return super().__repr__()+"\x08, state=%r)" % self.state
+

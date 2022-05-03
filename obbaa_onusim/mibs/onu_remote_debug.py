@@ -1,4 +1,4 @@
-# Copyright 2020 Broadband Forum
+# Copyright 2021 Broadband Forum
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GAL Ethernet profile MIB (G.988 9.2.7).
+"""Onu remote debug MIB (G.988 9.3.11).
 """
 from ..actions.create import create_action
 from ..actions.set import set_action
-from ..actions.get import get_action
+from ..actions.get import get_action, get_next_action
 from ..actions.delete import delete_action
-from ..mib import MIB, Attr, M, R, RWC
-from ..types import Number
-
+from ..mib import MIB, Attr, M, R, RWC, RW
+from ..types import Number, Bytes, Table
+ 
 #: Instantiated `MIB`.
-gal_eth_prof_mib = MIB(272, 'GAL_ETH_PROF', 'GAL Ethernet Profile', attrs=(
+onu_remote_debug_mib = MIB(158, 'Onu_Remote_Debug', 'onu_remote_debug', attrs=(
     Attr(0, 'me_inst', 'Managed entity instance', R, M, Number(2)),
-    Attr(1, 'max_gem_payload_size', 'Max GEM payload Size', RWC, M, Number(2))
+    Attr(1, 'Command_format', 'command_format', RWC, M, Number(1)),
+    Attr(2, 'Command_Onu', 'command_send_to_onu', RWC, M, Bytes(24)),
+    Attr(3, 'reply_table', 'Reply_table', RW, M, Table(25))
 ), actions=(
-    get_action, set_action, create_action, delete_action
+    get_action, set_action, create_action, delete_action, get_next_action
 ))

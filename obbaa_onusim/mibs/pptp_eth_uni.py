@@ -51,5 +51,5 @@ pptp_eth_uni_mib = MIB(11, 'PPTP_ETH_UNI', 'Represents a physical ethernet inter
     Change(6,  'op_state'),
     Change(12, 'arc_timer_expiration')
 ), alarms=(
-    Alarm(0, 'lan_los', 'No carrier at the Ethernet UNI'),
+    Alarm(0,'lan_los','No carrier at the Ethernet UNI','Loss of signal'),
 ))

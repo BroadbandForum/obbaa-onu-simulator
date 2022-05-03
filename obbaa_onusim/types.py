@@ -33,7 +33,9 @@ FieldDict = Dict[str, FieldValue]
 # used for attribute values (for this module's Attr class)
 # XXX need to reconsider all the names!
 # XXX need to distinguish raw and user values
-AttrValue = Union[bool, bytearray, int, str]
+# word_entry = Dict[str,int]
+# table_attr = Dict[str,word_entry]
+AttrValue = Union[bool, bytearray, int, str, Tuple[bytes,...]]
 AttrDict = Dict[str, AttrValue]
 
 AttrValuesEnum = Tuple[str, ...]
@@ -160,14 +162,18 @@ class Datum(AutoGetter):
             * The offset is ready to be passed to the next ``decode``
               invocation
         """
+    
         size = self._size
         format_ = self._struct_format
         if offset + size > len(buffer):
             # XXX should this be a warning or error?
             value = self._default
+            logger.error('Not enough bytes in buffer')
         else:
             raw_value = struct.unpack_from(format_, buffer, offset)[0]
             value = self.value(raw_value)
+            
+
         return value, offset + size
 
     def encode(self, value: AttrValue = None) -> bytearray:
@@ -199,10 +205,6 @@ class Datum(AutoGetter):
         """Convert data item raw value to user value.
         """
         raise Exception('Unimplemented value() method')
-
-    @property
-    def _struct_format(self) -> str:
-        raise Exception('Unimplemented struct_format property')
 
     def __str__(self) -> str:
         extra = '==%r' % self._fixed if self._fixed is not None else \
@@ -324,7 +326,38 @@ class Bytes(Datum):
     def value(self, raw_value: bytes) -> bytes:
         return raw_value
 
+    def decode(self, buffer: bytearray, offset: int) -> Tuple[AttrValue, int]:
+        return super().decode(buffer, offset)
+
     @property
     def _struct_format(self) -> str:
         # not 'p' because only for 's' is the count the item size
         return '!%ds' % self._size
+
+class Table(Datum):
+
+    def __init__(self, elemSize: int, default: Tuple[bytes,...] = None, fixed: Tuple[bytes,...] = None):
+        default = default or []
+        self.elemSize = elemSize
+        self._struct_format = "!%dc" % elemSize
+        super().__init__(elemSize, default=default, fixed=fixed)
+
+    # get bytes from Table (tuple)
+    def raw_value(self, value: Tuple[bytes,...]) -> int:
+        return int.from_bytes(value,'big')
+
+    # get Table(tuple) from bytes
+    def value(self, raw_value: int) -> Tuple[bytes,...]:
+        return tuple(raw_value.to_bytes(self.elemSize,'big'))
+
+    # decode one element
+    def decode(self, buffer: bytearray, offset: int) -> Tuple[AttrValue, int]:
+           value = struct.unpack_from(self._struct_format, buffer, offset)
+           return value, offset + self.elemSize
+
+    #encode the whole table
+    def encode(self, value: Tuple[bytes,...] = None) -> bytearray:
+        buffer = bytearray(self.elemSize * len(value))
+        raw_value = self.raw_value(value)
+        struct.pack_into(self._struct_format, buffer, 0, raw_value)
+        return buffer

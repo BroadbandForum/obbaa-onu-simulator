@@ -337,7 +337,6 @@ class Message:
         # allow subclass to perform further initialization
         fields = message.validate()
         message._fields.update(fields)
-
         # return message
         return message
 

@@ -34,11 +34,11 @@ ieee_8021p_mapper_svc_prof_mib = MIB(130, 'IEEE_802_1P_MAPPER', 'IEEE 802.1p Map
     Attr(8, 'iw_tp_ptr_pbit6', 'Interwork TP pointer for Pbit priority 6', RWC, M, Number(2)),
     Attr(9, 'iw_tp_ptr_pbit7', 'Interwork TP pointer for Pbit priority 7', RWC, M, Number(2)),
     Attr(10, 'unmarked_frame_option', 'Unmarked Frame option', RWC, M, 
-    	Enum(1, ('derive_pcp_from_dscp',
-    	         'set_pcp_by_default_pbit_assumption_attr'))),
+       Enum(1, ('derive_pcp_from_dscp',
+                'set_pcp_by_default_pbit_assumption_attr'))),
     Attr(11, 'dscp_to_pbit_mapping', 'DSCP to Pbit Mapping', RW, M, Bytes(24)),
     Attr(12, 'default_pbit_assumption', 'Default Pbit Assumption', RWC, M, Number(1)),
     Attr(13, 'tp_type', 'TP Type', RWC, O, Number(1))
-), actions=(
+    ), actions=(
     get_action, set_action, create_action, delete_action
 ))

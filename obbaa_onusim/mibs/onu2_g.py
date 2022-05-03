@@ -38,7 +38,7 @@ onu2_g_mib = MIB(257, 'ONU2-G', 'Contains additional attributes associated '
          Number(2)),
     Attr(7, 'total_traf_sched_number', 'Total traffic scheduler number', R, M,
          Number(1)),
-    # Attr(8, 'deprecated0', 'Deprecated', R, O, Number(1, fixed=0)),
+    Attr(8, 'deprecated0', 'Deprecated', R, O, Number(1)),
     Attr(9, 'total_gem_port_number', 'Total GEM port-ID number', R, O,
          Number(2)),
     Attr(10, 'sys_up_time', 'SysUpTime', R, O, Number(4, units='10ms')),

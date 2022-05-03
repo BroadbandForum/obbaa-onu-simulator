@@ -21,9 +21,9 @@ The relevant classes and instances are:
 * `GetResponse`: Get response message class
 * `get_action`: Get action instance.
 """
-
+import functools
 import logging
-
+import operator
 from ..action import Action
 from ..message import Message
 from ..types import Bytes, Number, FieldDict
@@ -48,13 +48,17 @@ class Get(Message):
 
             * ``attr_mask``: attribute mask; 0-65535
         """
-        attr_mask, _ = Number(2).decode(contents, 0)
+        offset=0
+
+        attr_mask, offset = Number(2).decode(contents, offset)
+
         return {'attr_mask': attr_mask}
 
     def process(self, server: object) -> 'GetResponse':
         results = server.database.get(self.onu_id, self.me_class,
                                       self.me_inst, self.attr_mask,
                                       extended=self.extended)
+
 
         response = GetResponse(cterm_name=self.cterm_name, onu_id=self.onu_id,
                                extended=self.extended, tci=self.tci,
@@ -63,7 +67,7 @@ class Get(Message):
                                attr_mask=results.attr_mask,
                                opt_attr_mask=results.opt_attr_mask,
                                attr_exec_mask=results.attr_exec_mask,
-                               _attrs=results.attrs)
+                               attrs=results.attrs)
         return response
 
 
@@ -85,8 +89,7 @@ class GetResponse(Message):
             contents += Number(2).encode(self.attr_exec_mask)
 
         # both baseline and extended messages have attribute values next
-        attrs = self.get('_attrs', [])
-        for attr, value in attrs:
+        for attr, value in self.attrs:
             contents += attr.encode(value)
 
         # baseline messages have opt_attr_mask and attr_exec_mask last
@@ -99,6 +102,7 @@ class GetResponse(Message):
             contents += Number(2).encode(self.opt_attr_mask)
             contents += Number(2).encode(self.attr_exec_mask)
 
+        
         return contents
 
     def decode_contents(self, contents: bytearray) -> FieldDict:
@@ -184,8 +188,113 @@ class GetResponse(Message):
         return fields
 
 
+class Get_Next(Message):
+
+#Get_Next command message
+
+    def encode_contents(self) -> bytearray:
+
+        contents = Number(2).encode(self.seq_num)
+
+        return contents
+
+    def decode_contents(self, contents: bytearray) -> FieldDict:
+        """Decode this message's contents, i.e. its type-specific payload.
+
+        Returns:
+            Dictionary with the following items.
+
+            * ``attr_mask``: attribute mask; 0-65535
+        """
+        offset = 0
+        attr_mask, offset = Number(2).decode(contents, offset)    
+        seq_num, _ = Number(2).decode(contents,offset)
+        return {'attr_mask': attr_mask, 'seq_num': seq_num}
+
+    def process(self, server: object) -> 'GetNextResponse':
+        results = server.database.get_next(self.onu_id, self.me_class,
+                                    self.me_inst, self.attr_mask, self.seq_num,
+                                    extended=self.extended)
+
+        response = GetNextResponse(cterm_name=self.cterm_name, onu_id=self.onu_id,
+                            extended=self.extended, tci=self.tci,
+                            me_class=self.me_class, me_inst=self.me_inst,
+                            reason=results.reason,
+                            attr_mask=results.attr_mask,
+                            attrs=results.attrs)
+        return response
+
+
+class GetNextResponse(Message):
+    """Get_next response message.
+    """
+
+    def encode_contents(self) -> bytearray:
+        contents = bytearray()
+        return contents
+
+    def decode_contents(self, contents: bytearray) -> FieldDict:
+        """Decode this message's contents, i.e. its type-specific payload.
+
+        Returns:
+            Dictionary with the following items.
+
+            * ``reason``: result, reason; 0-255
+            * ``attr_mask``: attribute mask; 0-65535
+            * other: MIB-specific attributes as specified by the
+              attribute mask
+        """
+        extended = self.extended
+        offset = 0
+
+        # reason always come first
+        reason, offset = Number(1).decode(contents, offset)
+
+
+        attr_mask, offset = Number(2).decode(contents, offset)
+
+        # extended messages have opt_attr_mask and attr_exec_mask next
+       
+        mib = self._mib
+        attrs_offset = offset
+        attrs_length = 0
+        if not extended:
+            attrs_length = 25
+        else:
+            for index in range(1, 17):
+                index_shift = 16 - index  # 15, 14, ..., 0
+                index_mask = 1 << index_shift
+                if attr_mask & index_mask:
+                    attr = mib.attr(index)
+                    if attr and reason != 0b0011:
+                        attrs_length += attr.size
+           
+        # baseline messages have opt_attr_mask and attr_exec_mask next
+        offset += attrs_length
+    
+        offset = attrs_offset
+        fields = {'reason': reason, 'attr_mask': attr_mask}
+        for index in range(1, 17):
+            index_shift = 16 - index  # 15, 14, ..., 0
+            index_mask = 1 << index_shift
+            if attr_mask & index_mask:
+                attr = mib.attr(index)
+                # XXX this also checked reason != 0b0011 but that prevented
+                #     decoding of attributes that are present in the message
+                if attr:
+                    value, offset = attr.decode(contents, offset)
+                    fields[attr.name] = value
+
+        # return decoded fields
+        return fields
+
+
 get_action = Action(9, 'get', 'Get action', Get, GetResponse)
+
+get_next_action = Action(26, 'get_next', 'Get_next action', Get_Next, GetNextResponse)
+
 """Get `Action`.
+
 
 This specifies the message type and provides a link between the action's
 command and response messages.

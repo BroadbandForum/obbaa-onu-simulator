@@ -25,7 +25,7 @@ from ..types import Bits, Bool, Enum, Number, String
 #: Instantiated `MIB`.
 onu_g_mib = MIB(256, 'ONU-G', 'Represents the ONU as equipment', attrs=(
     Attr(0, 'me_inst', 'Managed entity instance', R, M, Number(2, fixed=0)),
-    Attr(1, 'vendor_id', 'Vendor ID', R, M, Number(4)),
+    Attr(1, 'vendor_id', 'Vendor ID', R, M, String(4)),
     Attr(2, 'version', 'Version', R, M, String(14, default='v1')),
     Attr(3, 'serial_number', 'Serial number', R, M, (String(4), Number(4))),
     Attr(4, 'traffic_management', 'Traffic management option', R, M, Enum(1, (

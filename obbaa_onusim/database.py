@@ -19,14 +19,15 @@ also to have a client-side database, populated via `get <get_action>` and
 `MIB upload <mib_upload_action>` actions.
 """
 
+from gettext import install
 import logging
 import time
-
+import math
 from typing import Dict, List, Optional, Tuple
 
 from . import util
 
-from .mib import Attr, MIB, M, RW
+from .mib import Attr, MIB, M, RW, RWC
 from .mibs.onu_g import onu_g_mib
 from .mibs.onu2_g import onu2_g_mib
 from .mibs.onu_data import onu_data_mib
@@ -35,6 +36,7 @@ from .mibs.gal_eth_prof import gal_eth_prof_mib
 from .mibs.mac_bridge_svc_prof import mac_bridge_svc_prof_mib
 from .mibs.mac_bridge_port_config import mac_bridge_port_conf_mib
 from .mibs.pptp_eth_uni import pptp_eth_uni_mib
+from .mibs.ani_g import ani_g_mib
 from .mibs.tcont import tcont_mib
 from .mibs.gem_iw_tp import gem_iw_tp_mib
 from .mibs.gem_port_net_ctp import gem_port_net_ctp_mib
@@ -42,7 +44,8 @@ from .mibs.ieee_8021p_mapper_svc_prof import ieee_8021p_mapper_svc_prof_mib
 from .mibs.vlan_tag_filter_data import vlan_tag_filter_data_mib
 from .mibs.ext_vlan_tag_op_conf_data import extended_vlan_tag_op_conf_data_mib
 from .mibs.priority_queue import priority_queue_mib
-from .types import AttrDataValues
+from .mibs.onu_remote_debug import onu_remote_debug_mib
+from .types import AttrDataValues, Table
 
 logger = logging.getLogger(__name__.replace('obbaa_', ''))
 
@@ -69,30 +72,32 @@ omcc_version = extended_supported and omcc_version_extended or \
 #:   These specs should be read from JSON/YAML files.
 specs = (
     (onu_g_mib, (
-        {'me_inst': 0, 'vendor_id': 1234, 'version': 'v2',
+        {'me_inst': 0, 'vendor_id': 'ABCD', 'version': 'v2',
          'serial_number': ('abcdefgh', 5678)},
     )),
     (onu2_g_mib, (
-        {'me_inst': 0, 'omcc_version': omcc_version,
-         'sys_up_time': lambda: int(100.0 * (time.time() - startup_time))},
+    {'me_inst': 0, 'equipment_id': 'ONUSIM', 'omcc_version': omcc_version,
+    'sys_up_time': lambda: int(100.0 * (time.time() - startup_time))},
     )),
     (onu_data_mib, (
         {'me_inst': 0, 'mib_data_sync': 0},
     )),
     (software_image_mib, (
-        {'me_inst': 0x0000},
-        {'me_inst': 0x0001},
-        {'me_inst': 0x0100},
-        {'me_inst': 0x0101}
+        {'me_inst': 0x0000, 'version': 'ONUSIM_V010002', 'is_committed': True, 'is_active': True, 'is_valid': True},
+        {'me_inst': 0x0001, 'version': 'ONUSIM_V010001', 'is_committed': False, 'is_active': False, 'is_valid': True},
     )),
     (tcont_mib, (
         {'me_inst': 0x8000}, {'me_inst': 0x8001},
         {'me_inst': 0x8002}, {'me_inst': 0x8003},
         {'me_inst': 0x8004}, {'me_inst': 0x8005},
         {'me_inst': 0x8006}, {'me_inst': 0x8007},
+        {'me_inst': 0x8008}, {'me_inst': 0x8009},
     )),
     (pptp_eth_uni_mib, (
         {'me_inst': 1, 'config_ind': 0x03, 'max_frame_size': 1518},
+    )),
+    (ani_g_mib, (
+        {'me_inst': 1},
     )),
     (priority_queue_mib, (
     	#8 downstream priority queues for the eth uni
@@ -177,7 +182,27 @@ specs = (
         {'me_inst': 0x803d, 'related_port': 0x80070005},
         {'me_inst': 0x803e, 'related_port': 0x80070006}, 
         {'me_inst': 0x803f, 'related_port': 0x80070007},
-    ))
+    )),
+    (gal_eth_prof_mib, (
+    )),
+    (mac_bridge_svc_prof_mib, (
+    )),
+    (mac_bridge_port_conf_mib, (
+    )),
+    (extended_vlan_tag_op_conf_data_mib, (
+    )),
+    (gem_port_net_ctp_mib, (
+    )),
+    (ieee_8021p_mapper_svc_prof_mib, (
+    )),
+    (gem_iw_tp_mib, (
+    )),
+    (vlan_tag_filter_data_mib, (
+    )),
+    (onu_remote_debug_mib, (
+    )),
+
+    
 )
 
 #: Implemented MIBs, i.e. the MIBs referenced by the MIB instance specs.
@@ -185,7 +210,7 @@ mibs = {s[0].number: s[0] for s in specs}
 
 # this controls whether optional attributes are implemented (explicitly
 # defined optional attributes are always implemented)
-optional = False
+optional = True
 
 
 class Results:
@@ -239,7 +264,8 @@ class Database:
         """MIB database constructor.
 
         Args:
-            onu_id_range: ONU id range, e.g. ``range(10)`` means ONU ids 0, 1,
+            onu_id_range: ONU {'me_inst': (0,), 'mib_data_sync': (0,)}
+id range, e.g. ``range(10)`` means ONU ids 0, 1,
                 ...9. An identical database is instantiated for each of these
                 ONU ids.
         """
@@ -276,7 +302,7 @@ class Database:
                 me_class, self._mib_names()))
             reason = 0b0100 
         else:
-            instances_for_onu_id = self._instances.get(onu_id, {})
+            instances_for_onu_id = self._instances.get(onu_id, {})        
             instance = instances_for_onu_id.get((me_class, me_inst), None)
             if not instance:
                 logger.error('ONU %d MIB %s #%d not instantiated; instances: '
@@ -295,7 +321,10 @@ class Database:
 
     def increment_mib_sync(self, onu_id):
         _, instance, _ = self._instance(onu_id, onu_data_mib.number, 0)
+        mib,_,_= self._instance(onu_id,onu_data_mib.number,0)
+        _,_,reason = self._instance(onu_id,onu_data_mib.number,0)
         assert instance is not None
+        assert mib is not None
         assert 'mib_data_sync' in instance
         # XXX sadly this is a tuple; the external interface should convert
         #     scalar data to/from tuples
@@ -304,6 +333,74 @@ class Database:
         mib_data_sync = 1 if mib_data_sync >= 255 else mib_data_sync + 1
         instance['mib_data_sync'] = (mib_data_sync,)
         logger.info('updated: MIB %s = %r' % (onu_data_mib, instance))
+
+
+    def create(self, onu_id, me_class, me_inst, values, *, extended=False) -> Results:
+        
+        """create the specified entities.
+
+        Args:
+            onu_id: ONU id.
+            me_class: MIB class.
+            me_inst: MIB instance.
+            extended: whether an extended message has been requested.
+
+        Returns:
+            Results object, including `reason`,
+            `opt_attr_mask` and `attrs`.
+        """
+
+        results=Results()
+        mib = self._mib(me_class)
+
+        if not mib:
+            logger.error('MIB %d not implemented; MIBs: %s' % (
+                me_class, self._mib_names()))
+            results.reason = 0b0100
+            return results
+
+
+        instances_for_onu_id = self._instances.get(onu_id,{})
+        instance = instances_for_onu_id.get((me_class,me_inst),None)
+
+        if instance is not None:
+                logger.error('ONU %d MIB %s #%d already exists! '% (onu_id, mib, me_inst))
+                results.reason = 0b0111
+                return results
+
+        #verify mib
+        #Reason that can be possible 
+
+        new_instance : Instance = {'me_inst': me_inst}
+
+
+        attr_names = mib.attr_names().split(", ")
+        for idx in range(len(attr_names)):
+            attr_name = attr_names[idx]
+            attr_names[idx] = attr_name[attr_name.find("(")+1:attr_name.find(")")]
+            
+        if not all(elem in attr_names for elem in values.keys()):
+            logger.error('Unknown manage entity instance!')
+            results.reason = 0b0101
+            return results
+
+        for attr_name in attr_names:
+            if attr_name in values:
+                new_instance[attr_name] = values[attr_name]
+            else:
+                new_instance[attr_name] = 0 ## 0 ou default
+        
+        self._instances[onu_id][(me_class,me_inst)] = new_instance
+
+
+        logger.info('test_instance: MIB %s = %r' % (mib,new_instance))
+        for attr_name in new_instance.keys():
+            logger.info('      Attr(%s = %s)' % (attr_name,new_instance[attr_name]))
+        logger.debug('MIBs_existed: %s' % self._mib_names())
+        logger.debug('All_instances: %r' % self._instances)
+        logger.debug('instance_names: %s' % self._instance_names(onu_id, mib.number))
+
+        return results
 
     def set(self, onu_id, me_class, me_inst, attr_mask, values, *,
             extended=False) -> Results:
@@ -328,6 +425,8 @@ class Database:
         results = Results()
         mib, instance, results.reason = self._instance(onu_id, me_class,
                                                        me_inst)
+            
+
         if mib and instance:
             for index, index_mask in util.indices(attr_mask):
                 attr = mib.attr(index)
@@ -338,7 +437,7 @@ class Database:
                     if results.reason in {0b0000, 0b1001}:
                         results.reason = 0b1001
                         results.opt_attr_mask |= index_mask
-                elif attr.access != RW:
+                elif attr.access != RW and attr.access != RWC:
                     logger.warning('MIB %s #%d %s ignored (not writable)' % (
                         mib, me_inst, attr))
                     results.reason = 0b0011
@@ -353,8 +452,16 @@ class Database:
                     value = values[name]
                     # XXX there should be utilities for going to and from
                     #     tuples
+                      #if the attribute data is a tuple of TableEntries (assuming all tuple members have the same type)
                     value = value if isinstance(value, tuple) else (
                         value,) if value is not None else None
+
+                    if isinstance(attr._data[0],Table):
+                        if isinstance(instance[name],tuple):
+                            new_value = list(instance[name])
+                            [new_value.append(v) for v in value]
+                            value = tuple(new_value)
+                    
                     if instance[name] != value:
                         instance[name] = value
                         updated = True
@@ -364,14 +471,34 @@ class Database:
         # if the MIB instance was updated, increment the MIB data sync counter
         if updated:
             self.increment_mib_sync(onu_id)
-
-        # Ceate funciton is not yet completed. That's why 2 lines were placed so that the function set can run.
-        # When the create function is done delete these lines.
-        if results.reason == 0b0100:
-            results.reason=0b0000         
-
         return results
 
+
+    def set_alarm(self, me_class: int, me_inst: int, bitmap: bytes,
+     onu_id: int, *, extended: bool = False):
+    
+        logger.debug("me_class: %d" % me_class)
+        logger.debug("me_inst: %d" % me_inst)
+        logger.debug("bitmap: %r" %bitmap)
+        logger.debug("onu_id: %d" % onu_id)
+        logger.debug("extended: %r" %extended)
+
+        mib, _, _ = self._instance(onu_id, me_class, me_inst)
+
+        if not mib:
+            logger.error("MIB not exist.")
+            return None
+       
+        for byte_idx in range(len(mib._alarms)):
+            byte = bitmap[byte_idx]
+            for bit_idx in range(8):
+                tot_idx = 8*byte_idx+bit_idx
+                if tot_idx > len(mib._alarms)-1:
+                    break
+                state = bool(byte & (0x80 >> bit_idx))
+                mib._alarms[tot_idx].set_state(state)
+
+            
     def get(self, onu_id: int, me_class: int, me_inst: int, attr_mask: int, *,
             extended: bool = False) -> Results:
         """Get the specified attribute values.
@@ -392,11 +519,13 @@ class Database:
                          onu_id, me_class, me_inst, attr_mask, extended))
         results = Results()
         mib, instance, results.reason = self._instance(onu_id, me_class,
-                                                       me_inst)
+                                                        me_inst)
+        
         if mib and instance:
             size = 0
             for index, index_mask in util.indices(attr_mask):
                 attr = mib.attr(index)
+
                 if not attr:
                     # XXX this isn't really of interest
                     logger.debug('MIB %s #%d %d not found' % (mib, me_inst,
@@ -404,19 +533,47 @@ class Database:
                     if results.reason in {0b0000, 0b1001}:
                         results.reason = 0b1001
                         results.opt_attr_mask |= index_mask
-                elif attr.name not in instance:
+
+                    logger.error('Attribute(s) failed or unknown!')
+                    return results
+
+                if attr.name not in instance:
                     logger.debug('MIB %s #%d %s ignored (not implemented)' % (
                         mib, me_inst, attr))
-                elif not extended and size + attr.size > 25:
-                    # XXX this isn't really of interest
-                    logger.debug('MIB %s #%d %s ignored (too long for '
-                                 'baseline message)' % (mib, me_inst,
-                                                        attr))
-                    # ref G.988 section 11.2.9; returning a parameter error
-                    # was recommended (see Jira OBBAA-237)
-                    # XXX we allow future smaller attributes to be
-                    #     included; should we?
-                    results.reason = 0b0011
+
+                inst_size = len(instance[attr.name]) if isinstance(attr._data[0],Table) else mib.attr(attr.name).size
+
+                if not extended and size > 0 and isinstance(attr._data[0],Table):  #attributes already found and table
+                      
+                      logger.debug('MIB %s #%d %s = %r' % (mib, me_inst, attr,
+                                                         value))
+                      
+                      logger.error('Parameters given exceed expected size. Parameter error!')
+                      results.reason = 0b0011
+
+                elif not extended and size > 0 and size + inst_size > 25:   #attributes exceed max size
+                      logger.debug('MIB %s #%d %s = %r' % (mib, me_inst, attr,
+                                                         value))
+                     
+                      logger.error('Parameters given exceed expected size. Parameter error!')
+                      results.reason = 0b0011
+
+
+                elif not extended and size == 0 and isinstance(attr._data[0],Table):  #found table
+                    if attr_mask != index_mask:    #table and other attributes
+                      logger.debug('MIB %s #%d %s' % (mib, me_inst, attr))
+                     
+                      logger.error('Parameters given exceed expected size. Parameter error!')
+                      results.reason = 0b0011
+                    else:                           #only table
+                        value = attr.resolve(instance[attr.name])
+                        logger.debug('MIB %s #%d %s = %r' % (mib, me_inst, attr,
+                                                         value))
+                        results.attr_mask |= index_mask
+                        results.attrs += [(attr, inst_size)]
+                        self._snapshots[me_class] = value
+                        self.max_seq_num = math.ceil(inst_size/29)-1
+
                 else:
                     value = attr.resolve(instance[attr.name])
                     logger.debug('MIB %s #%d %s = %r' % (mib, me_inst, attr,
@@ -424,6 +581,53 @@ class Database:
                     results.attr_mask |= index_mask
                     results.attrs += [(attr, value)]
                     size += attr.size
+                    
+        return results
+
+    def get_next(self, onu_id: int, me_class: int, me_inst: int, attr_mask: int, seq_num: int, *,
+            extended: bool = False) -> Results:
+        """Get the specified attribute values.
+
+        Args:
+            onu_id: ONU id.
+            me_class: MIB class.
+            me_inst: MIB instance.
+            attr_mask: requested attributes.
+            extended: whether an extended message has been requested.
+
+        Returns:
+            Results object, including `reason`, `attr_mask` and `attrs`.
+        """
+        logger.debug('get onu_id=%d, me_class=%d, me_inst=%d, '
+                     'attr_mask=%#06x, extended=%r' % (
+                         onu_id, me_class, me_inst, attr_mask, extended))
+        results = Results()
+        mib, instance, results.reason = self._instance(onu_id, me_class,
+                                                        me_inst)
+        
+        if me_class not in self._snapshots.keys():
+            logger.error("Get next with no get")
+            results.reason = 0b100
+            return results
+
+        if seq_num > self.max_seq_num:
+            logger.error("Exceeded max number of get nexts")
+            results.reason = 0b0011
+            return results
+
+        index, index_mask = util.indices(attr_mask)[0]
+        attr = mib.attr(index)
+        table = self._snapshots[me_class]
+        results.attr_mask |= index_mask
+
+        if seq_num < self.max_seq_num:
+            value = [instance[attr.name][29*seq_num+idx] for idx in range(29)]
+        else:
+            value = [0 for idx in range(29)]
+            for idx in range(len(instance[attr.name]) % 29):
+                value[idx] = instance[attr.name][29*self.max_seq_num+idx] 
+        results.attrs += [(attr, value)]
+
         return results
 
     def upload(self, onu_id, me_class, me_inst, *, extended=False) -> Results:

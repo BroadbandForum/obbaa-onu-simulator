@@ -38,8 +38,10 @@ import socket
 
 from typing import IO, Tuple, Union
 
-from .database import Database
+from .database import Database, mibs
 from .message import Message
+from .mib import Attr, MIB
+
 
 logger = logging.getLogger(__name__.replace('obbaa_', ''))
 
@@ -158,6 +160,18 @@ class Endpoint:
         """
         address = address or self._server_address
         buffer = message.encode(tr451=self._tr451)
+        self._sock.sendto(buffer, address)
+        logger.debug('sent %r bytes to %r' % (len(buffer), address))
+        self._dump_buffer(buffer)
+
+    def sendalarm(self, message: Message, me_class: int, address: Address = None) -> None:
+        """Send a message_alarm to the server or the specified address.
+        """
+        address = address or self._server_address
+        buffer = message.encode(tr451=self._tr451)
+        if mibs.get(me_class) == None:
+            logger.error("Can't send the message. MIB is need to be created")
+            return None
         self._sock.sendto(buffer, address)
         logger.debug('sent %r bytes to %r' % (len(buffer), address))
         self._dump_buffer(buffer)

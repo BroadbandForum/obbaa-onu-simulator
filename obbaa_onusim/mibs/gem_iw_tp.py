@@ -40,5 +40,5 @@ gem_iw_tp_mib = MIB(266, 'GEM_INT_TER_POINT', 'GEM Interworking Termination Poin
 ),changes=(
     Change(6,'op_state','operational state change'),
 ),alarms=(
-    Alarm(0,'Deprecated'),
+    Alarm(0,'Deprecated','Deprecated'),
 ))

@@ -37,6 +37,9 @@ import argparse
 import logging
 import os
 import sys
+import threading
+from obbaa_onusim.actions.alarm import Alarm
+
 
 import obbaa_onusim.endpoint as endpoint
 import obbaa_onusim.util as util
@@ -80,17 +83,62 @@ def main(argv=None):
 
     def process():
         message, address = server.recv()
+        global addr 
+        addr = address
         logger.info('received message %r from %r' % (message, address))
 
         response = server.process(message)
         if response:
-            server.send(response, address)
+            server.send(response, address)            
             logger.info('sent response %r to %r' % (response, address))
 
+    def run_async():
+        while True:
+            input("")
+            send_async()
+
+    def send_async():
+        cmd = input("Input commnd: ")
+        cmd_args = cmd.split(" ")
+        msg = None
+        
+        if cmd_args[0] == "alarm":
+            msg = Alarm(me_class = int(cmd_args[1]), \
+                        me_inst = int(cmd_args[2]), \
+                        bitmap = int(cmd_args[3],16).to_bytes(28,'big'), \
+                        seqNum = int(cmd_args[4]), \
+                        cterm_name=args.ctermname, \
+                        onu_id= args.onuidfirst, \
+                        type_ar = 0, \
+                        tci = 0x0059)
+
+                        
+        elif cmd_args[0] == "notif":
+            pass
+        else:
+            #unrecognized command
+            pass
+        if msg is not None:
+            print("Sending message %r" % msg)
+            server.process(msg)
+            try:
+                addr
+            except NameError:
+                logger.error("Attention the address may not be correct, because the other process has not yet occurred. Can't send alarm.")
+                return None
+            else:
+                server.sendalarm(msg,msg.me_class,addr)
+
+
+
+    asyc_tread = threading.Thread(target=run_async,name="async_thread")
+    asyc_tread.start()
+
+    
     while True:
         # XXX need debug mode (?) to control whether to catch exceptions
         if True:
-            process()
+            process() 
         else:
             try:
                 process()

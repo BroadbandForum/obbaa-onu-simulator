@@ -29,7 +29,7 @@ from .. import util
 
 from ..action import Action
 from ..message import Message
-from ..mib import RW
+from ..mib import RW, RWC
 from ..types import Number, FieldDict
 
 logger = logging.getLogger(__name__.replace('obbaa_', ''))
@@ -75,13 +75,13 @@ class Set(Message):
                 logger.warning(
                         'MIB %s %r not found; supported attributes: %s' % (
                             mib, name_or_number, mib.attr_names(RW)))
-            elif attr.access != RW:
+            elif attr.access != RW and attr.access !=RWC:
                 logger.warning('MIB %s %s is not writable (ignored)' % (mib,
                                                                         attr))
             else:
                 attr_mask |= attr.mask
                 # XXX for now, convert to int
-                values_[attr.name] = util.toint(value)
+                values_[attr.name] = (value)
         return {'attr_mask': attr_mask, 'values': values_}
 
     def encode_contents(self) -> bytearray:
@@ -145,7 +145,7 @@ class Set(Message):
             else:
                 value, offset = attr.decode(contents, offset)
                 values[attr.name] = value
-
+        
         return {'attr_mask': attr_mask, 'values': values}
 
     def process(self, server: object) -> 'SetResponse':

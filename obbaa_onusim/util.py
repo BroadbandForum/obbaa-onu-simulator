@@ -120,6 +120,7 @@ def indices(mask: int) -> Tuple[Tuple[int, int], ...]:
         index_mask = 1 << index_shift
         if index_mask & mask:
             indices_ += [(index, index_mask)]
+    
     return tuple(indices_)
 
 
@@ -145,8 +146,6 @@ def openfile(spec: Optional[str]) -> Optional[IO[str]]:
         mode = mode or 'a'
         return open(name, mode=mode, buffering=1)
 
-
-# helper to convert string to int (supports bases 2, 8, 10 and 16)
 def toint(x: Any):
     """String to integer conversion helper.
 
@@ -164,12 +163,6 @@ def toint(x: Any):
     if not isinstance(x, (str, bytes, bytearray)):
         return int(x)
     else:
-        match = re.match('^0([box])', x.lower().decode('ascii','ignore'))
+        match = re.match('^0([box])', x.lower())
         base = {'b': 2, 'o': 8, 'x': 16}[match.group(1)] if match else 10
-
-        if not isinstance(x,int):
-            x=0
-            return int(x)
-        else:
-            return int(x, base)
-
+        return int(x, base)

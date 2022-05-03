@@ -19,7 +19,7 @@ from ..actions.set import set_action
 from ..actions.get import get_action
 from ..actions.delete import delete_action
 from ..mib import MIB, Attr, M, R, RWC, O
-from ..types import Number
+from ..types import Number, Table
  
 #: Instantiated `MIB`.
 mac_bridge_svc_prof_mib = MIB(45, 'MAC_BRIDGE_SVC_PROF', 'MAC Bridge Service Profile', attrs=(
