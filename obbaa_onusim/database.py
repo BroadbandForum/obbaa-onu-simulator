@@ -56,6 +56,8 @@ Snapshot = Tuple[bool, int, list]
 # note the startup time
 startup_time = time.time()
 
+mibs_with_alarms = 0* [(int,int)]
+
 # this determines whether the server supports extended messages
 # XXX this currently only affects the omcc_version attribute
 extended_supported = True
@@ -95,6 +97,7 @@ specs = (
     )),
     (pptp_eth_uni_mib, (
         {'me_inst': 1, 'config_ind': 0x03, 'max_frame_size': 1518},
+        {'me_inst': 2, 'config_ind': 0x03, 'max_frame_size': 1518, 'oper_state': 'disabled'},
     )),
     (ani_g_mib, (
         {'me_inst': 1},
@@ -239,6 +242,15 @@ class Results:
         #: Number of upload-nexts (used by `Database.upload`).
         self.num_upload_nexts: int = 0
 
+        #: Number of alarms next 
+        self.num_alarm_nexts: int = 0
+
+        self.bit_map_alarms: bytes = b'0'
+
+        self.me_class_reported: int = 0
+
+        self.me_inst_reported: int = 0
+
         #: Next message body (used by `Database.upload_next`).
         self.body: List[int, List[Snapshot]] = [0, []]
 
@@ -248,7 +260,7 @@ class Results:
                'attrs=%r, num_upload_nexts=%d, body=%r)' % (
                    self.__class__.__name__, self.reason, self.attr_mask,
                    self.opt_attr_mask, self.attr_exec_mask, self.attrs,
-                   self.num_upload_nexts, self.body)
+                   self.num_upload_nexts,self.num_alarm_nexts, self.body)
 
     __repr__ = __str__
 
@@ -472,32 +484,6 @@ id range, e.g. ``range(10)`` means ONU ids 0, 1,
         if updated:
             self.increment_mib_sync(onu_id)
         return results
-
-
-    def set_alarm(self, me_class: int, me_inst: int, bitmap: bytes,
-     onu_id: int, *, extended: bool = False):
-    
-        logger.debug("me_class: %d" % me_class)
-        logger.debug("me_inst: %d" % me_inst)
-        logger.debug("bitmap: %r" %bitmap)
-        logger.debug("onu_id: %d" % onu_id)
-        logger.debug("extended: %r" %extended)
-
-        mib, _, _ = self._instance(onu_id, me_class, me_inst)
-
-        if not mib:
-            logger.error("MIB not exist.")
-            return None
-       
-        for byte_idx in range(len(mib._alarms)):
-            byte = bitmap[byte_idx]
-            for bit_idx in range(8):
-                tot_idx = 8*byte_idx+bit_idx
-                if tot_idx > len(mib._alarms)-1:
-                    break
-                state = bool(byte & (0x80 >> bit_idx))
-                mib._alarms[tot_idx].set_state(state)
-
             
     def get(self, onu_id: int, me_class: int, me_inst: int, attr_mask: int, *,
             extended: bool = False) -> Results:
@@ -629,6 +615,126 @@ id range, e.g. ``range(10)`` means ONU ids 0, 1,
         results.attrs += [(attr, value)]
 
         return results
+
+
+    def set_alarm(self, me_class: int, me_inst: int, bitmap: bytes,
+     onu_id: int, *, extended: bool = False):
+    
+        logger.debug("me_class: %d" % me_class)
+        logger.debug("me_inst: %d" % me_inst)
+        logger.debug("bitmap: %r" %bitmap)
+        logger.debug("onu_id: %d" % onu_id)
+        logger.debug("extended: %r" %extended)
+
+        mib, _, _ = self._instance(onu_id, me_class, me_inst)
+
+        if not mib:
+            logger.error("MIB not exist.")
+            return None
+       
+        for byte_idx in range(len(mib._alarms)):
+            byte = bitmap[byte_idx]
+            for bit_idx in range(8):
+                tot_idx = 8*byte_idx+bit_idx
+                if tot_idx > len(mib._alarms)-1:
+                    break
+                state = bool(byte & (0x80 >> bit_idx))
+                mib._alarms[tot_idx].set_state(state)
+        
+
+    def get_all_alarms(self, onu_id, me_class, me_inst, *, extended=False) -> Results:
+        """Prepare for get alarms.
+
+        This involves taking a snapshot and calculating how many subsequent
+        `Database.get_alarms_next` operations will be needed.
+
+        Args:
+            onu_id: ONU id.
+
+            me_class: MIB class (MUST be the ONU Data MIB class, i.e. 2).
+
+            me_inst: MIB instance (MUST be the ONU Data MIB instance, i.e. 0).
+
+            extended: whether an extended message has been requested (if so,
+                the subsequent `Database.get_all_alarms_next` operations MUST
+                also request extended messages).
+
+        Returns:
+            Results object, including `reason` and `num_alarms_nexts`.
+        """
+        logger.debug('upload onu_id=%d, me_class=%d, me_inst=%d, extended=%r'
+                     % (onu_id, me_class, me_inst, extended))
+        results = Results()
+        mib, instance, results.reason = self._instance(onu_id, me_class,
+                                                       me_inst)
+        if mib and instance:
+            if mib != onu_data_mib:
+                logger.error('MIB %s invalid; must be %s' % (
+                    mib, onu_data_mib))
+                results.reason = 0b0100
+            else:
+
+                # XXX some MIBs and attributes should potentially be excluded
+                global mibs_with_alarms
+                mibs_with_alarms.clear()
+                for key, instance in sorted(self._instances[onu_id].items(),
+                                            key=lambda i_: i_[0]):
+                                 
+                    me_class, me_inst = key
+                    mib = self._mib(me_class)
+                    if len(mib._alarms) > 0:
+                        for alarm in mib._alarms:
+                            if alarm.get_state() is True:
+                                mibs_with_alarms.append((me_class,me_inst))
+                                logger.info('me_class %r me_inst %r' % (me_class, me_inst))
+                                break
+            
+                results.num_alarms_nexts = len(mibs_with_alarms)
+                
+
+        return results
+
+    def get_all_alarms_next(self, onu_id, me_class, me_inst,seq_num, *, extended=False) -> Results:
+        """Get_all_alarms 
+
+        Args:
+            onu_id: ONU id.
+
+            me_class: MIB class (MUST be the ONU Data MIB class, i.e. 2).
+
+            me_inst: MIB instance (MUST be the ONU Data MIB instance, i.e. 0).
+
+        Returns:
+            Results object, including `reason` and `bit_map_alarms`.
+        """
+        logger.debug('get_all_alarms_next onu_id=%d, me_class=%d, me_inst=%d, '
+                     'seq_num=%r, extended=%r' % (
+                         onu_id, me_class, me_inst, seq_num, extended))
+        
+        results = Results()
+        mib, instance, results.reason = self._instance(onu_id, me_class,
+                                                       me_inst)
+
+        if mib and instance:
+            if mib != onu_data_mib:
+                logger.error('MIB %s invalid for get_all_alarms; must be %s' % (
+                    mib, onu_data_mib))
+                results.reason = 0b0100
+            else:
+                me_class_reported = mibs_with_alarms[seq_num][0]
+                me_inst_reported = mibs_with_alarms[seq_num][1]
+                mib_reported,_,_ = self._instance(onu_id, me_class_reported, me_inst_reported)
+                results.me_class_reported = me_class_reported
+                results.me_inst_reported = me_inst_reported
+                bitmap = 0
+                shift = 27*8+7
+                for alarm in mib_reported._alarms:
+                    bitmap |= (alarm.get_state_as_int() << shift)
+                    shift -= 1
+                results.bit_map_alarms = bitmap.to_bytes(28,'big')
+
+        return results
+
 
     def upload(self, onu_id, me_class, me_inst, *, extended=False) -> Results:
         """Prepare for uploading MIBs.

@@ -300,6 +300,9 @@ class Alarm(NumberName):
     def get_state(self):
         return self.state
 
+    def get_state_as_int(self):
+        return int(self.state)
+
     def set_state(self,state: bool):
         self.state = state
 

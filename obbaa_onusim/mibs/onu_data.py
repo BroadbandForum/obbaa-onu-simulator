@@ -19,7 +19,7 @@ from ..actions.get import get_action
 from ..actions.reset import mib_reset_action
 from ..actions.set import set_action
 from ..actions.upload import mib_upload_action, mib_upload_next_action
-from ..actions.other import get_all_alarms_action, get_all_alarms_next_action
+from ..actions.get_all_alarms import get_all_alarms_action, get_all_alarms_next_action
 from ..mib import MIB, Attr, M, R, RW
 from ..types import Number
 
