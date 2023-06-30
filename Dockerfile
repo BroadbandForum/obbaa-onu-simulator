@@ -33,10 +33,15 @@ RUN apt-get update \
           /opt/obbaa-onu-simulator
 
 # copy source code
-COPY . /opt/obbaa-onu-simulator
 
+COPY . /opt/obbaa-onu-simulator
+WORKDIR /opt/obbaa-onu-simulator
 # build documentation and install simulator
 RUN PYTHONPATH=/opt/obbaa-onu-simulator \
-        make -C /opt/obbaa-onu-simulator distclean html dist \
- && pip3 install --upgrade /opt/obbaa-onu-simulator \
- && (cd /usr/local/bin; ln -s /opt/obbaa-onu-simulator/bin/omci_dump_decoder)
+        make -C /opt/obbaa-onu-simulator distclean html dist \  
+ && pip3 install --upgrade /opt/obbaa-onu-simulator \ 
+ && pip3 install -r requirements.txt \
+ && (cd /usr/local/bin; ln -s /opt/obbaa-onu-simulator/bin/omci_dump_decoder) 
+
+EXPOSE 50000 3000
+

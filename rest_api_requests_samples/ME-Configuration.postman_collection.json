@@ -1,0 +1,518 @@
+{
+	"info": {
+		"_postman_id": "e39b0911-147e-4686-96f4-76397280c78c",
+		"name": "ME-Configuration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2885826"
+	},
+	"item": [
+		{
+			"name": "createNewMe",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\":[
+								{
+									\"onu_id\": 1,
+									\"action\": \"CREATE\",
+									\"class_id\": 45,
+									\"instance_id\": 0,
+									\"attributes\":[
+										{
+											\"index\": 1,
+											\"value\": 1
+										},
+										{
+											\"index\": 2,
+											\"value\": \"True\"
+										},
+										{
+											\"index\": 3,
+											\"value\": \"False\"
+										},
+										{
+											\"index\": 4,
+											\"value\": 500
+										},
+										{
+											\"index\": 8,
+											\"value\": 1
+										},
+										{
+											\"index\": 10,
+											\"value\":20
+										}
+									]
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateMe",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\": [
+								{
+									\"onu_id\": 1,
+									\"action\": \"SET\",
+									\"class_id\": 45,
+									\"instance_id\": 0,
+									\"attributes\": [
+										{
+											\"index\": 2,
+											\"value\": \"False\"
+										},
+										{
+											\"index\": 7,
+											\"value\": 500
+										}
+									]
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		},		
+		{
+			"name": "GetMe",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\":[
+								{	
+									\"onu_id\": 1,
+									\"action\": \"GET\",
+									\"class_id\": 45,
+									\"instance_id\": 0,
+									\"attributes\":[
+										{
+											\"index\": 1
+										},
+										{
+											\"index\": 2
+										},
+										{
+											\"index\": 3
+										},
+										{
+											\"index\": 4
+										},
+										{
+											\"index\": 5
+										},
+										{
+											\"index\": 6
+										},
+										{
+											\"index\": 7
+										},
+										{
+											\"index\": 8
+										},
+										{
+											\"index\": 9
+										},
+										{
+											\"index\": 10
+										}
+									]
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteMe",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\":[
+								{		
+									\"onu_id\": 1,
+									\"action\": \"DELETE\",
+									\"class_id\": 45,
+									\"instance_id\": 0
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GenerateAlarm",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\":[
+								{			
+									\"onu_id\": 1,
+									\"action\": \"ALARM\",			
+									\"class_id\": 11,
+									\"instance_id\": 1,
+									\"bit_map\": \"80000000000000000000000000000000000000000000000000000000\",
+									\"seq_number\": 1
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "MultipleRequests",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "
+						{
+							\"requests\":[
+								{		
+									\"onu_id\": 1,
+									\"action\": \"CREATE\",
+									\"class_id\": 45,
+									\"instance_id\": 1,
+									\"attributes\":[
+										{
+											\"index\": 1,
+											\"value\": 1
+										},
+										{
+											\"index\": 2,
+											\"value\": \"True\"
+										},
+										{
+											\"index\": 3,
+											\"value\": \"False\"
+										},
+										{
+											\"index\": 4,
+											\"value\": 500
+										},
+										{
+											\"index\": 8,
+											\"value\": 1
+										},
+										{
+											\"index\": 10,
+											\"value\":20
+										}
+									]
+								},{
+									\"onu_id\": 1,
+									\"action\": \"SET\",
+									\"class_id\": 45,
+									\"instance_id\": 1,
+									\"attributes\":[                
+										{
+											\"index\": 3,
+											\"value\": \"True\"
+										},
+										{
+											\"index\": 4,
+											\"value\": 200
+										}
+									]
+								},{
+									\"onu_id\": 1,
+									\"action\": \"GET\",
+									\"class_id\": 45,
+									\"instance_id\": 1,
+									\"attributes\":[
+										{
+											\"index\": 1
+										},
+										{
+											\"index\": 2
+										},
+										{
+											\"index\": 3
+										},
+										{
+											\"index\": 4
+										},
+										{
+											\"index\": 8
+										},
+										{
+											\"index\": 10
+										}
+									]
+								},{
+									\"onu_id\": 1,
+									\"action\": \"DELETE\",
+									\"class_id\": 45,
+									\"instance_id\": 1
+								},{
+									\"onu_id\": 1,
+									\"action\": \"GET\",
+									\"class_id\": 45,
+									\"instance_id\": 1,
+									\"attributes\":[
+										{
+											\"index\": 1
+										},
+										{
+											\"index\": 2
+										},
+										{
+											\"index\": 3
+										},
+										{
+											\"index\": 4
+										},
+										{
+											\"index\": 8
+										},
+										{
+											\"index\": 10
+										}
+									]
+								}
+							]
+						}
+					",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://172.16.0.6:3000/onu/action_on_mes",
+					"protocol": "http",
+					"host": [
+						"162",
+						"16",
+						"0",
+						"6"
+					],
+					"port": "3000",
+					"path": [
+						"onu",
+						"action_on_mes"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

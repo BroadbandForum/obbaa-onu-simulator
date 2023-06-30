@@ -45,6 +45,8 @@ from .mibs.vlan_tag_filter_data import vlan_tag_filter_data_mib
 from .mibs.ext_vlan_tag_op_conf_data import extended_vlan_tag_op_conf_data_mib
 from .mibs.priority_queue import priority_queue_mib
 from .mibs.onu_remote_debug import onu_remote_debug_mib
+from .mibs.eth_frame_downstream_pm import eth_frame_downstream_pm_mib
+from .mibs.eth_frame_upstream_pm import eth_frame_upstream_pm_mib
 from .types import AttrDataValues, Table
 
 logger = logging.getLogger(__name__.replace('obbaa_', ''))
@@ -204,8 +206,11 @@ specs = (
     )),
     (onu_remote_debug_mib, (
     )),
+    (eth_frame_downstream_pm_mib, (
+    )),
+    (eth_frame_upstream_pm_mib, (
+    )),
 
-    
 )
 
 #: Implemented MIBs, i.e. the MIBs referenced by the MIB instance specs.
@@ -415,7 +420,7 @@ id range, e.g. ``range(10)`` means ONU ids 0, 1,
         return results
 
     def set(self, onu_id, me_class, me_inst, attr_mask, values, *,
-            extended=False) -> Results:
+            extended=False, check_access=True) -> Results:
         """Set the specified attribute values.
 
         Args:
@@ -449,7 +454,7 @@ id range, e.g. ``range(10)`` means ONU ids 0, 1,
                     if results.reason in {0b0000, 0b1001}:
                         results.reason = 0b1001
                         results.opt_attr_mask |= index_mask
-                elif attr.access != RW and attr.access != RWC:
+                elif check_access and attr.access != RW and attr.access != RWC:
                     logger.warning('MIB %s #%d %s ignored (not writable)' % (
                         mib, me_inst, attr))
                     results.reason = 0b0011
@@ -884,9 +889,9 @@ id range, e.g. ``range(10)`` means ONU ids 0, 1,
         mib, instance, res.reason = self._instance(onu_id, me_class,me_inst)
 
         if mib and instance:
-            if mib != mibs.get:
+            if mib != mibs.get(me_class, None):
                 logger.error('mib %s is not valid for delete, must be %s' % (
-                    mib, mibs.get))
+                    mib, mibs.get(me_class, None)))
                 ##error result
                 res.reason = 0b0100
             else:

@@ -84,3 +84,11 @@
 
 ```automodule:: obbaa_onusim.util
 ```
+### ONU REST-API
+
+```automodule:: obbaa_onusim.rest_api
+```
+### ONU connection info
+
+```automodule:: obbaa_onusim.connection_info
+```

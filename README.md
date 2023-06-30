@@ -34,3 +34,13 @@ The alarm will be sent upstream and the vOMCI Function will check if it has been
 
 # ONU simulator and test client
 See the full [documentation](docs/html/index.html).
+
+# START OF ONU-SIMULATOR REST-API
+After building the docker container with the commande:
+- docker build -t onu-simulator-config .
+
+run the dicker container with the commande:
+- docker container run -it --name obbaa-onu-simulator --rm -p 3000:3000 onu-simulator-config bash
+
+and after that in the docker Terminal launch the onu_server.py with:
+- python3 ./bin/onu_server.py
